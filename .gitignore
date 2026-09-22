@@ -1,0 +1,13 @@
+.venv/
+data/
+runs/
+__pycache__/
+*.pyc
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.pdf
+paper/template/
+.DS_Store
