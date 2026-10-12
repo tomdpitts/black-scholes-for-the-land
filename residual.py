@@ -115,8 +115,8 @@ def main():
 
     starts = {f"{s}{y}": t for (y, s, t) in season_starts(A, TEST)}
     fig, ax = plt.subplots(1, 2, figsize=(7.0, 3.0), sharey=True)
-    panel(ax[0], "OND2020", "(a) 2020 short rains: rain near normal", starts["OND2020"])
-    panel(ax[1], "MAM2022", "(b) 2022 long rains: drought", starts["MAM2022"])
+    panel(ax[0], "OND2020", "(a) Oct–Dec 2020, short-rains season: rain near normal", starts["OND2020"])
+    panel(ax[1], "MAM2022", "(b) Mar–May 2022, long-rains season: drought", starts["MAM2022"])
     ax[0].set_ylabel("NDVI anomaly, box mean")
     ax[0].legend(fontsize=5.5, frameon=False, loc="lower left", handlelength=1.6)
     fig.tight_layout(w_pad=2.5)

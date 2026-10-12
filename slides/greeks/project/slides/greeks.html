@@ -1,0 +1,69 @@
+<section id="greeks" style="background:#F4F2EC;color:#1C2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 150px;display:flex;flex-direction:column;gap:36px">
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1C2430">Greek analogues for rangeland greenness</h2>
+<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:14px;background:#FBFAF7;border:1px solid #DCD8CC;border-radius:16px;padding:28px 36px">
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;line-height:1;color:#2A6FC4;width:64px">Δ</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px">
+<h3 style="font-size:36px;font-weight:600;line-height:1.2">Delta</h3>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-style:italic;font-size:26px;color:#4A5260">∂Fₕ / ∂rₜ₊₁</p>
+</div>
+<p style="font-size:24px;font-weight:600;background:#2A6FC4;color:#FBFAF7;padding:6px 20px;border-radius:999px;white-space:nowrap">Computed</p>
+</div>
+<p style="font-size:26px;line-height:1.35">NDVI h steps ahead per extra 100 mm of rain now.</p>
+<p style="font-size:26px;line-height:1.35;color:#4A5260">Peak <b>+0.075</b> one month on, positive at every pixel. Top-third Δ patches green <b>≈2×</b> the bottom third.</p>
+<p style="font-size:24px;line-height:1.35;color:#2A6FC4">Use: rain exposure for insurance and baselines.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;background:#FBFAF7;border:1px solid #DCD8CC;border-radius:16px;padding:28px 36px">
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;line-height:1;color:#2A6FC4;width:64px">Θ</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px">
+<h3 style="font-size:36px;font-weight:600;line-height:1.2">Theta</h3>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-style:italic;font-size:26px;color:#4A5260">∂Fₕ / ∂aₜ</p>
+</div>
+<p style="font-size:24px;font-weight:600;background:#2A6FC4;color:#FBFAF7;padding:6px 20px;border-radius:999px;white-space:nowrap">Computed</p>
+</div>
+<p style="font-size:26px;line-height:1.35">Share of today's anomaly that survives h steps on.</p>
+<p style="font-size:26px;line-height:1.35;color:#4A5260">Half-life <b>35 days</b> in the long rains, 38 in the dry; the anomaly's own autocorrelation gives 38.</p>
+<p style="font-size:24px;line-height:1.35;color:#2A6FC4">Use: recovery rate, resilience, permanence risk.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;background:#FBFAF7;border:1px solid #DCD8CC;border-radius:16px;padding:28px 36px">
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;line-height:1;color:#2A6FC4;width:64px">Γ</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px">
+<h3 style="font-size:36px;font-weight:600;line-height:1.2">Gamma</h3>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-style:italic;font-size:26px;color:#4A5260">∂²Fₕ / ∂rₜ₊₁²</p>
+</div>
+<p style="font-size:24px;font-weight:600;background:#2A6FC4;color:#FBFAF7;padding:6px 20px;border-radius:999px;white-space:nowrap">Computed</p>
+</div>
+<p style="font-size:26px;line-height:1.35">Curvature: does extra rain saturate the response?</p>
+<p style="font-size:26px;line-height:1.35;color:#4A5260">Concave at once (<b>−0.039</b>), mildly convex after (<b>+0.013</b> a month on). Seasonal data: concave.</p>
+<p style="font-size:24px;line-height:1.35;color:#2A6FC4">Use: why rain's timing matters, not only its total.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;background:#FBFAF7;border:1px solid #DCD8CC;border-radius:16px;padding:28px 36px">
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:72px;line-height:1;color:#B4501F;width:64px">ν</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px">
+<h3 style="font-size:36px;font-weight:600;line-height:1.2">Vega</h3>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-style:italic;font-size:26px;color:#4A5260">∂Fₕ / ∂σᵣ</p>
+</div>
+<p style="font-size:24px;font-weight:600;color:#B4501F;border:2px solid #B4501F;padding:4px 18px;border-radius:999px;white-space:nowrap">Not yet computed</p>
+</div>
+<p style="font-size:26px;line-height:1.35">Response to rain variability, not its level.</p>
+<p style="font-size:26px;line-height:1.35;color:#4A5260">Exists only where Γ ≠ 0; to second order ν ≈ Γ·σᵣ.</p>
+<p style="font-size:24px;line-height:1.35;color:#B4501F">Use: cost of more erratic seasons at the same mean.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6270">Fₕ = expected NDVI anomaly h steps (×16 days) ahead · all by autodiff through the fitted model · Laikipia Box A, held-out years 2019–25</p>
+<aside>Black–Scholes gives the Greeks by differentiating the pricing formula; here they come from differentiating the fitted greenness rollout with Jacobian-vector products, checked against finite differences to 1e-4.
+
+Delta: mean over the grid, long rains, by 16-day step .029/.075/.073/.060/.047/.036, so peak a month on and about half gone by three months. Sorted by Delta, the top third of patches green about twice as much per 100 mm as the bottom third, on unseen years and on the unseen landscape. Delta depends on the pixel's current state, not the pixel: a frozen map averaged over training years is no better than a constant. Caveat: the pre-registered primary within-pixel test (G1) failed on Box A and passed on Box B; the across-pixel test passed on both.
+
+Theta: half-life 35 days long rains, 34 short rains, 38 dry, against 38 days from the anomaly's raw autocorrelation over 2003–2018. Theta holds rain memory fixed, so it should undercut slightly, and it does.
+
+Gamma: model Gamma, long rains, grid mean by 16-day step: −.039, +.013, +.013, +.011, +.008, +.006 per (100 mm)². Extra rain saturates within its own window but its lagged effect is mildly convex. Separately, the binned seasonal data are concave (MAM −0.0096, OND −0.0039); that is a different quantity (season totals), so the two are not a direct check of each other.
+
+Vega: only exists where Gamma is nonzero; by a second-order expansion the effect of rain spread scales as Gamma times sigma. Not computed yet.
+
+The implied residual is the analogue of implied volatility: what the model must assume to reproduce what the satellite saw.</aside>
+</section>

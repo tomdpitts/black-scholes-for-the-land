@@ -34,7 +34,7 @@ def kenya_outline():
     raise RuntimeError("Kenya not found")
 
 
-def true_colour(box):
+def true_colour(box, NPIX=NPIX, ovr=3):
     w, s, e, n = aoi.BOXES[box]
     res = (e - w) / NPIX
     tr = from_origin(w, n, res, res)
@@ -52,7 +52,7 @@ def true_colour(box):
     env.__enter__()
     for it in items:
         for i, b in enumerate(("B04", "B03", "B02")):
-            with rasterio.open(it.assets[b].href, overview_level=3) as src:
+            with rasterio.open(it.assets[b].href, overview_level=ovr) as src:
                 with WarpedVRT(src, crs="EPSG:4326", transform=tr, width=NPIX, height=NPIX,
                                resampling=Resampling.average, nodata=0) as vrt:
                     arr = vrt.read(1).astype(np.float32)

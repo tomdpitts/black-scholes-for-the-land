@@ -134,8 +134,37 @@ def draw_paper(out, f=1.45):
     plt.close(fig)
 
 
+def draw_strip(out, f=1.0):
+    """Figure 1 strip: one transition, inverted and re-used. Drawn at 6.2 in for a 5.5 in text width (~7 pt type)."""
+    fig, ax = plt.subplots(figsize=(6.2, 1.55))
+    fig.subplots_adjust(0, 0, 1, 1)
+    fig.patch.set_facecolor(SURF)
+    ax.set_xlim(-0.06, 7.06); ax.set_ylim(0, 1.75); ax.axis("off")
+    T, S = 9 * f, 8 * f
+    y, h, w, g = 0.03, 1.38, 1.55, 0.267
+    xs = [i * (w + g) for i in range(4)]
+    st = 0.19
+    box(ax, xs[0], y, w, h, "1  State", "$a_t$: greenness\n$w_t$: rain memory\n$x$: pixel traits",
+        "≈ spot price", tfs=T, sfs=S, step=st)
+    box(ax, xs[1], y, w, h, "2  Transition", "$a_{t+1}=a_t+\\mu+\\sigma\\varepsilon_t$\n$w_{t+1}=\\lambda w_t+r_{t+1}$\none $\\theta$, all pixels",
+        "≈ pricing formula", fc="#eaf2fc", ec=BLUE, lw=1.3, tfs=T, sfs=S, step=st)
+    box(ax, xs[2], y, w, h, "3  Invert", "$\\hat\\varepsilon_t=(a_{t+1}-a_t-\\mu)/\\sigma$\none unknown, so\nunique given $\\theta$",
+        "≈ implied volatility", fc="#fff3ec", ec=ORANGE, lw=1.3, tfs=T, sfs=S, step=st)
+    box(ax, xs[3], y, w, h, "4  Re-use", "rain $r'$: counterfactual\n$\\partial_r,\\ \\partial_a$: $\\Delta,\\ \\Theta$\n$-\\log p_\\theta$: score",
+        "≈ Greeks", ec=AQUA, lw=1.2, tfs=T, sfs=S, step=st)
+    for i in range(3):
+        arrow(ax, (xs[i] + w, y + h / 2), (xs[i + 1], y + h / 2))
+    # what is observed enters from above
+    for k, lab in ((1, "rain $r_{t+1}$ (CHIRPS)"), (2, "observed $a_{t+1}$ (MODIS)")):
+        ax.text(xs[k] + w / 2, 1.66, lab, ha="center", va="center", fontsize=S, color=MUTED)
+        arrow(ax, (xs[k] + w / 2, 1.58), (xs[k] + w / 2, y + h), color=MUTED)
+    fig.savefig(out, bbox_inches="tight", facecolor=SURF, dpi=220)
+    plt.close(fig)
+
+
 if __name__ == "__main__":
+    draw_strip("paper/figs/fig1_strip.pdf")
+    draw_strip("paper/figs/fig1_strip.png")
     draw_paper("paper/figs/fig0_diagram.pdf")
-    draw_paper("/private/tmp/claude-501/-Users-tompitts-dphil-ProjectB/9d0e3568-97fc-41c7-8932-1c229a922578/scratchpad/diagram_paper_check.png")
     draw("paper/figs/fig0_diagram.png")
     print("diagram written")

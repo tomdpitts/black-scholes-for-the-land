@@ -11,3 +11,7 @@ paper/*.blg
 paper/*.pdf
 paper/template/
 .DS_Store
+*.synctex.gz
+*.tar.gz
+paper/arxiv/main.pdf
+paper/figs/slide_*.png
