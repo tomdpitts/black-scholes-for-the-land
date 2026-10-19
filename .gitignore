@@ -15,3 +15,14 @@ paper/template/
 *.tar.gz
 paper/arxiv/main.pdf
 paper/figs/slide_*.png
+
+# AgriAI build output (rebuild with paper/agriai/build.sh)
+paper/agriai/*.aux
+paper/agriai/*.log
+paper/agriai/*.bbl
+paper/agriai/*.blg
+paper/agriai/*.pdf
+
+# Kept local: OpenReview reviews (repo is public) and WDPA data (no redistribution)
+revision/openreview_*.json
+wdpa.json

@@ -1,0 +1,431 @@
+<title>Black–Scholes Revision Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#F1F2EC; --panel:#E5E9DE; --card:#FAFBF7; --ink:#17241C; --muted:#56635A; --line:#CAD1C2;
+  --grass:#3F6B26; --dry:#A8761F; --rain:#2D6DB5; --cf:#D9622B; --neg:#B23A2A; --pos:#3F7D3A;
+  --idea:#17241C;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible","Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#111712; --panel:#1A231C; --card:#161E18; --ink:#E4EADF; --muted:#9BA89D; --line:#2E3B31;
+    --grass:#93C46A; --dry:#DDAA4C; --rain:#72A8EA; --cf:#F08A55; --neg:#E8735F; --pos:#86C27C;
+    --idea:#E4EADF;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#111712; --panel:#1A231C; --card:#161E18; --ink:#E4EADF; --muted:#9BA89D; --line:#2E3B31;
+  --grass:#93C46A; --dry:#DDAA4C; --rain:#72A8EA; --cf:#F08A55; --neg:#E8735F; --pos:#86C27C;
+  --idea:#E4EADF;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1.05rem;line-height:1.62;padding-inline:20px;padding-block:0 72px}
+.wrap{max-width:720px;margin-inline:auto}
+.wide{max-width:960px;margin-inline:auto}
+h1,h2,h3{font-family:var(--display);line-height:1.12;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.1rem,5.6vw,3.3rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,3.4vw,2rem);font-weight:800;letter-spacing:-.01em}
+h3{font-size:1.2rem;font-weight:600}
+p{margin:0}
+ul{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:.35rem}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--grass);font-weight:600}
+.muted{color:var(--muted)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+a{color:var(--rain)}
+:focus-visible{outline:3px solid var(--rain);outline-offset:2px}
+header{padding-block:60px 8px;display:flex;flex-direction:column;gap:1.1rem}
+.lede{font-size:1.2rem;line-height:1.55}
+section{padding-block:52px 4px;display:flex;flex-direction:column;gap:1.05rem}
+
+/* index chips */
+.jump{display:flex;flex-wrap:wrap;gap:8px;margin-top:.4rem}
+.jump a{font-family:var(--mono);font-size:.8rem;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px}
+.jump a:hover{border-color:var(--ink)}
+
+/* pillars */
+.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.pillar{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--pc);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:.55rem}
+.pillar h3{font-size:1.08rem}
+.pillar p{font-size:.95rem;line-height:1.5}
+.pillar .big{font-family:var(--display);font-weight:800;font-size:1.65rem;line-height:1;color:var(--pc)}
+.pillar .hits{display:flex;flex-wrap:wrap;gap:5px;margin-top:auto;padding-top:.3rem}
+.p-idea{--pc:var(--idea)} .p-model{--pc:var(--rain)} .p-attr{--pc:var(--cf)} .p-sens{--pc:var(--dry)}
+.tag{font-family:var(--mono);font-size:.72rem;border-radius:999px;padding:2px 9px;border:1px solid var(--pc,var(--line));color:var(--pc,var(--ink));white-space:nowrap;text-decoration:none}
+
+/* fairness */
+.quote{border-left:4px solid var(--grass);padding:4px 0 4px 16px;font-size:1.12rem;font-style:italic}
+.quote cite{display:block;font-style:normal;font-family:var(--mono);font-size:.76rem;color:var(--muted);margin-top:6px}
+.key{background:var(--panel);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:.6rem}
+.key .eyebrow{color:var(--muted)}
+.proposal{border:1px dashed var(--grass);border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:.5rem;background:var(--card)}
+.proposal .eyebrow{color:var(--grass)}
+.proposal blockquote{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:1.02rem;line-height:1.5}
+
+/* split bar */
+.split{display:flex;flex-direction:column;gap:8px}
+.bar{display:flex;height:34px;border-radius:6px;overflow:hidden;font-family:var(--mono);font-size:.78rem}
+.bar div{display:flex;align-items:center;justify-content:center;color:#fff;white-space:nowrap;overflow:hidden}
+.s-start{background:#8E9688} .s-rain{background:var(--rain)} .s-res{background:var(--cf)}
+.s-z{background:var(--muted)}
+.bar-lab{font-size:.88rem;color:var(--muted)}
+
+/* pipeline */
+.pipe{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1.1fr;gap:10px;align-items:stretch}
+.node{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px;font-size:.92rem;line-height:1.4}
+.node b{font-family:var(--mono);font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.node .hits{display:flex;flex-wrap:wrap;gap:4px;margin-top:auto}
+.node.outs{gap:8px}
+.node.outs .o{border-top:1px solid var(--line);padding-top:6px}
+.arr{align-self:center;font-family:var(--mono);color:var(--muted);font-size:1.2rem}
+@media (max-width:760px){.pipe{grid-template-columns:1fr}.arr{transform:rotate(90deg);justify-self:center}}
+
+/* critique cards */
+.crit{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;scroll-margin-top:16px}
+.crit-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;padding:16px 20px;border-bottom:1px solid var(--line);border-left:6px solid var(--pc)}
+.crit-head .id{font-family:var(--mono);font-weight:600;color:var(--pc)}
+.crit-head h3{flex:1 1 280px}
+.crit-head .who{font-family:var(--mono);font-size:.76rem;color:var(--muted)}
+.crit-body{padding:18px 20px;display:grid;grid-template-columns:150px 1fr;gap:14px 18px}
+.crit-body .k{font-family:var(--mono);font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;padding-top:.25rem}
+.crit-body .v{display:flex;flex-direction:column;gap:.55rem;font-size:.98rem}
+.crit-body .v.change{background:var(--panel);border-radius:8px;padding:10px 12px}
+@media (max-width:600px){.crit-body{grid-template-columns:1fr;gap:4px}.crit-body .v{margin-bottom:10px}}
+.verdict{display:inline-block;font-family:var(--mono);font-size:.72rem;font-weight:600;border-radius:4px;padding:1px 7px;color:#fff;vertical-align:1px}
+.v-pass{background:var(--pos)} .v-fail{background:var(--neg)} .v-mixed{background:var(--dry)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.hl td{background:var(--panel)}
+.win{font-weight:700}
+
+/* budget */
+.budget{display:flex;flex-direction:column;gap:10px}
+.brow{display:grid;grid-template-columns:150px 1fr 70px;gap:12px;align-items:center;font-size:.92rem}
+.btrack{height:16px;background:var(--panel);border-radius:4px;overflow:hidden;display:flex}
+.btrack span{display:block;height:100%}
+@media (max-width:520px){.brow{grid-template-columns:1fr}}
+
+/* tests */
+.tests{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.test{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:.6rem}
+.test .eyebrow{color:var(--muted)}
+.test dl{display:grid;grid-template-columns:96px 1fr;gap:.4rem .8rem;margin:0;font-size:.94rem}
+.test dt{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding-top:.2rem}
+.test dd{margin:0}
+footer{padding-block:48px 0;font-size:.88rem;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Black–Scholes for the Land · revision for AgriAI @ AAAI-27</span>
+  <h1>What the reviewers hit, and what the tests found</h1>
+  <p class="lede">The reviewers liked the idea. Every serious critique was about a claim that ran ahead of its evidence. We ran a test for each one, written down before it ran. The core survived. What changes is the fence around each claim, and most fences cost two or three sentences.</p>
+  <div class="key">
+    <span class="eyebrow">Rule for the rewrite</span>
+    <p>The paper keeps its spine: the idea, the model that works, attribution, and the Greeks. Each fix gets one or two sentences in the main text and points to the appendix for detail. No fix gets to bury the framing.</p>
+  </div>
+  <nav class="jump" aria-label="Jump to critique">
+    <a href="#c1">C1 residual ≠ management</a><a href="#c2">C2 weak baselines</a><a href="#c3">C3 missing table</a><a href="#c4">C4 only rain</a><a href="#c5">C5 satellite gaps</a><a href="#c6">C6 Δ oversold</a><a href="#c7">C7 analogy and tidy-up</a>
+  </nav>
+</header>
+</div>
+
+<div class="wide">
+<section>
+  <span class="eyebrow">The spine</span>
+  <h2>Four things the paper says, and which critiques touch each</h2>
+  <div class="pillars">
+    <div class="pillar p-idea">
+      <h3>1 · The idea</h3>
+      <p>Traders invert Black–Scholes on option prices to read off implied volatility. We invert a learned model on what the satellite saw to read off an <b>implied residual</b>: what the land did beyond the rain.</p>
+      <div class="hits"><a class="tag" href="#c7" style="--pc:var(--idea)">C7</a><a class="tag" href="#c4" style="--pc:var(--idea)">C4</a></div>
+    </div>
+    <div class="pillar p-model">
+      <h3>2 · The model works</h3>
+      <span class="big num">−23%</span>
+      <p>Three-month error against history alone on unseen years, and −13% against the best hand-written model. The spread is calibrated.</p>
+      <div class="hits"><a class="tag" href="#c2">C2</a><a class="tag" href="#c3">C3</a><a class="tag" href="#c5">C5</a></div>
+    </div>
+    <div class="pillar p-attr">
+      <h3>3 · Attribution</h3>
+      <span class="big num">0.07 / 0.07</span>
+      <p>In the 2022 drought the land ended 0.17 NDVI below normal: 0.07 from failed rain, 0.07 not explained by rain, 0.03 already missing at the start. A z-score blames the land for all 0.17.</p>
+      <div class="hits"><a class="tag" href="#c1">C1</a></div>
+    </div>
+    <div class="pillar p-sens">
+      <h3>4 · Sensitivities</h3>
+      <span class="big num">Δ ≈ 0.075</span>
+      <p>NDVI gained per extra 100 mm of rain, at every pixel. Patches with the top third of Δ green about twice as much as the bottom third. Θ gives a shock half-life of about 35 days.</p>
+      <div class="hits"><a class="tag" href="#c6">C6</a></div>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="wrap">
+<section>
+  <span class="eyebrow">The AgriAI angle</span>
+  <h2>Fair attribution: pay herders for what they did, not for the weather they had</h2>
+  <p class="quote">“Furthermore, important human-centered concerns, such as transparency, fairness, and participatory system design, are often underexplored.”<cite>AgriAI 2027 call for papers</cite></p>
+  <p>This matches what the paper actually measures. Today's baselines charge people for the weather.</p>
+  <div class="split" aria-label="Who gets blamed for the 2022 loss">
+    <span class="bar-lab">A z-score (and the NDVI index behind livestock insurance) on the 2022 loss of 0.17 NDVI</span>
+    <div class="bar"><div class="s-z" style="width:100%">all 0.17 put on the land</div></div>
+    <span class="bar-lab">The learned model, same season</span>
+    <div class="bar"><div class="s-start" style="width:18%">0.03</div><div class="s-rain" style="width:41%">0.07 rain</div><div class="s-res" style="width:41%">0.07 land</div></div>
+    <span class="bar-lab"><span style="color:#8E9688">■</span> deficit at season start &nbsp; <span style="color:var(--rain)">■</span> rain that failed &nbsp; <span style="color:var(--cf)">■</span> not explained by rain</span>
+  </div>
+  <ul>
+    <li><b>Carbon credits.</b> SNAP's baseline sees only mean annual rain, so weather swings can show up as management gains or losses, and communities gain or lose credit for weather.</li>
+    <li><b>Index insurance.</b> Payouts follow NDVI against the pixel's own history, so browning from overgrazing can trigger the same payout as browning from drought.</li>
+    <li><b>The 2023 controversy</b> over the Northern Kenya project, which the paper already cites, questioned both its baseline and how pastoralist communities were treated.</li>
+  </ul>
+  <p>The critiques make this angle stronger. <b>Transparency</b> means saying when the split can be trusted, and the new tests give that answer in numbers (C1): trust it at project scale, and only if management does not itself react to rain. If herders move cattle when rain fails, which is often the sensible thing to do, the model can overstate their effect in that drought by up to about half. A fair system has to say that out loud, and the revised paper will.</p>
+  <p class="muted">One caution on wording. Rain-adjusted baselines (RESTREND) date from 2004, so “not previously possible” would invite a fight. The defensible claim is a split every 16 days at every pixel, with uncertainty and a stated validity range. Annual linear baselines cannot give that.</p>
+  <div class="proposal">
+    <span class="eyebrow">Proposed wording · not in the paper yet</span>
+    <blockquote>Approach, end of first paragraph: “The split is also a question of fairness: a baseline blind to rain charges pastoralists for drought and credits them for good rains, rewarding the weather instead of what they did.”</blockquote>
+    <blockquote>Conclusion: “Accurate attribution decides whether herders are paid for their management or for their weather; stating where it holds is part of making it fair.”</blockquote>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Where the critiques land</span>
+  <h2>The pipeline, with each critique pinned to its step</h2>
+</section>
+</div>
+<div class="wide">
+  <div class="pipe" role="group" aria-label="Pipeline">
+    <div class="node"><b>Inputs</b>CHIRPS rain every 16 days, plus each pixel's state: greenness anomaly and rain memory.<div class="hits"><a class="tag" href="#c4">C4 only rain</a><a class="tag" href="#c5">C5 gaps</a></div></div>
+    <div class="arr" aria-hidden="true">→</div>
+    <div class="node"><b>Learned model M2</b>A transition density: the mean and spread of next step's greenness.<div class="hits"><a class="tag" href="#c2">C2 baselines</a><a class="tag" href="#c3">C3 table</a></div></div>
+    <div class="arr" aria-hidden="true">→</div>
+    <div class="node"><b>Invert on observed NDVI</b>The implied residual: what the land did that rain does not explain.<div class="hits"><a class="tag" href="#c1">C1 not management</a></div></div>
+    <div class="arr" aria-hidden="true">→</div>
+    <div class="node outs"><b>Products</b>
+      <div class="o"><b>Attribution</b> rerun under normal rain, residual held fixed <span class="hits"><a class="tag" href="#c1">C1</a></span></div>
+      <div class="o"><b>Greeks</b> differentiate the rollout for Δ, Θ, ∂σ/∂r <span class="hits"><a class="tag" href="#c6">C6</a></span></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+<section>
+  <span class="eyebrow">The critiques, one by one</span>
+  <h2>What each reviewer said, what we tested, what changes</h2>
+  <p class="muted">R1 scored 6, R2 and R3 scored 5. Every number below comes from a saved run under <span class="num">runs/20261006_*</span>; details are in <span class="num">revision/REVISION.md</span>.</p>
+</section>
+</div>
+
+<div class="wrap" style="display:flex;flex-direction:column;gap:22px">
+
+<article class="crit p-attr" id="c1">
+  <div class="crit-head"><span class="id">C1</span><h3>“The residual is not management”</h3><span class="who">R1, R3 · threatens attribution · R3's whole review</span></div>
+  <div class="crit-body">
+    <div class="k">What they said</div>
+    <div class="v"><p>The residual holds everything the model leaves out. That includes grazing and fire, but also rain-data error, model error, satellite noise and heat. The counterfactual also assumes, without saying so, that the residual would stay the same if the rain changed.</p>
+    <p><b>In plain terms:</b> if herders bring cattle in <i>because</i> the rain failed, rain caused that “management” signal. Holding it fixed while swapping in normal rain then gives the wrong answer.</p></div>
+    <div class="k">What we tested</div>
+    <div class="v"><p><b>Plant a known signal.</b> Treat the fitted model as the true world, so any error comes from the assumption alone. Add a fake management effect we control (−0.01 NDVI per 16 days, on a random half of 2 km blocks) to all 13 held-out seasons. Invert, rerun under normal rain, and compare with the truth.</p>
+    <p><b>Corrupt the rain data</b> by 25% and 50% per CHIRPS cell, then check real-data diagnostics: the residual against rain, against pixel quality, and against a second rain product (ERA5).</p></div>
+    <div class="k">What we found</div>
+    <div class="v">
+      <div class="tbl"><table>
+        <thead><tr><th>If management…</th><th class="n">error, drought</th><th class="n">error, normal season</th></tr></thead>
+        <tbody>
+          <tr><td>ignores rain</td><td class="n">+18%</td><td class="n">+1%</td></tr>
+          <tr><td>intensifies when rain fails</td><td class="n">+47%</td><td class="n">4%</td></tr>
+          <tr><td>eases when rain fails</td><td class="n">−7%</td><td class="n">11%</td></tr>
+        </tbody></table></div>
+      <ul>
+        <li><b>A surprise.</b> There is an 18% overstatement even when the assumption holds. The residual is stored in units of the model's spread, and the spread grows with rain, so rerunning a drought under normal rain stretches each residual.</li>
+        <li><b>Scale matters.</b> 25% rain-data error moves the box average by at most 0.005 NDVI but single pixels by 0.03. Attribution is a project-scale product.</li>
+        <li><b>The headline survives.</b> The 2022 normal-rain counterfactual is −0.099. It becomes −0.096, −0.094 or −0.087 under each correction, so “0.10 below” holds to about 0.01.</li>
+      </ul>
+    </div>
+    <div class="k">What changes</div>
+    <div class="v change"><p>Call it a <b>rain-conditioned residual</b>. Add about 4 lines, “What the counterfactual assumes”: (A1) management does not react to rain; (A2) data errors average out over the area; (A3) the state carries what rain does. Add about 8 lines, “Is the counterfactual identified?”, with the numbers above.</p></div>
+  </div>
+</article>
+
+<article class="crit p-model" id="c2">
+  <div class="crit-head"><span class="id">C2</span><h3>“The baselines are weak”</h3><span class="who">R2 · threatens “the model works” · half of R2's review</span></div>
+  <div class="crit-body">
+    <div class="k">What they said</div>
+    <div class="v"><p>History alone, a linear model and a hand-made S-curve are easy to beat. Show M2 against strong modern models that also see rain.</p></div>
+    <div class="k">What we tested</div>
+    <div class="v"><p><b>GBM:</b> gradient-boosted trees given three lags of greenness and six windows of rain. <b>GRU-M2:</b> M2 plus a memory unit, the same model with more capacity, which also tests whether the current-state-only design is enough.</p></div>
+    <div class="k">What we found</div>
+    <div class="v">
+      <div class="tbl"><table>
+        <thead><tr><th>Skill vs history (higher is better)</th><th class="n">A 1-step</th><th class="n">A 3-mo</th><th class="n">B 1-step</th><th class="n">B 3-mo</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td>M2 (paper)</td><td class="n win">.085</td><td class="n win">.226</td><td class="n win">.104</td><td class="n">.170</td></tr>
+          <tr><td>GBM</td><td class="n">.046</td><td class="n">.222</td><td class="n">.090</td><td class="n win">.260</td></tr>
+          <tr><td>GRU-M2</td><td class="n">.052</td><td class="n">.205</td><td class="n">.097</td><td class="n">.206</td></tr>
+        </tbody></table></div>
+      <ul>
+        <li>M2 is the best one-step model on both landscapes and ties at three months on unseen years. <span class="verdict v-pass">A pass</span></li>
+        <li>On the unseen landscape, both baselines beat it at three months. <span class="verdict v-fail">B fail</span></li>
+        <li><b>Why:</b> memory is not the reason. Given exactly M2's inputs, the trees still win. M2's rollouts drift browner, by 0.01 to 0.02 NDVI over three months. That comes from how M2 is fitted (one step at a time), not from what it sees.</li>
+        <li><b>Why it does not sink the paper:</b> the claim was never “best forecaster”. It is a density you can invert and differentiate. Trees cannot be inverted into a residual, and their output is flat in rain, so they have no Δ.</li>
+      </ul>
+    </div>
+    <div class="k">What changes</div>
+    <div class="v change"><p>Put both baselines in the main table. Add about 3 lines saying who wins where and why (drift), and one line naming the fix: fit on multi-step rollouts, as future work.</p></div>
+  </div>
+</article>
+
+<article class="crit p-model" id="c3">
+  <div class="crit-head"><span class="id">C3</span><h3>“I can't find the headline numbers”</h3><span class="who">R1 · threatens “the model works”</span></div>
+  <div class="crit-body">
+    <div class="k">What they said</div>
+    <div class="v"><p>The abstract claims 23% and 13%. The only table shows one-step skill (0.085), so neither number appears anywhere.</p></div>
+    <div class="k">What we found</div>
+    <div class="v"><p>Both are three-month numbers, and the saved runs reproduce them exactly: 0.226 skill against history, and M2's error 13% below the S-curve's.</p></div>
+    <div class="k">What changes</div>
+    <div class="v change"><p>One main-text table with one-step and three-month results for every model, including C2's baselines. The caption gets R1's point: “attribution given the rain that fell, not forecasting.”</p></div>
+  </div>
+</article>
+
+<article class="crit p-idea" id="c4">
+  <div class="crit-head"><span class="id">C4</span><h3>“Rain is the only driver”</h3><span class="who">R2, R1 · touches the model and the idea</span></div>
+  <div class="crit-body">
+    <div class="k">What they said</div>
+    <div class="v"><p>Does the method take other weather, such as heat? Does leaving it out change what the residual means?</p></div>
+    <div class="k">What we tested</div>
+    <div class="v"><p>Refit M2 with ERA5 temperature, evaporative demand and air dryness (vapour-pressure deficit), alone and together with rain.</p></div>
+    <div class="k">What we found</div>
+    <div class="v"><ul>
+      <li><b>Rain is the driver.</b> Temperature alone does worse than history. <span class="verdict v-pass">pass</span></li>
+      <li><b>Adding heat hurts on later years.</b> 2019–25 ran 0.5–0.6 °C warmer than the training years, and the network extrapolates badly. Inside the training climate the extra drivers help. <span class="verdict v-fail">fail</span></li>
+      <li><b>The residual depends on the drivers you include.</b> With heat modelled, the 2022 counterfactual moves from −0.099 to −0.158, because heat leaves the residual. A counterfactual has to say which drivers it sets to normal.</li>
+    </ul></div>
+    <div class="k">What changes</div>
+    <div class="v change"><p>Two sentences in the main text, with the table in the appendix. They also widen the idea: nothing in the model is specific to rain.</p></div>
+  </div>
+</article>
+
+<article class="crit p-model" id="c5">
+  <div class="crit-head"><span class="id">C5</span><h3>“Satellite gaps are not handled”</h3><span class="who">R1 · touches “the model works”</span></div>
+  <div class="crit-body">
+    <div class="k">What they said</div>
+    <div class="v"><p>MODIS has gaps, for example 61 days after 1 November 2021, and the paper says “not yet excluded”. Could gaps drive the drought results?</p></div>
+    <div class="k">What we found</div>
+    <div class="v"><ul>
+      <li>Dropping gap-spanning steps <b>raises every score</b>: three-month skill on Box A goes from 0.226 to 0.269. The 2022 season contains no gap.</li>
+      <li>We also found an unlisted 144-day gap from June 2025. There are <b>13</b> held-out seasons, not 14.</li>
+    </ul></div>
+    <div class="k">What changes</div>
+    <div class="v change"><p>One appendix line, and correct 14 to 13. Keep the lower numbers as the headline, because they are the conservative ones.</p></div>
+  </div>
+</article>
+
+<article class="crit p-sens" id="c6">
+  <div class="crit-head"><span class="id">C6</span><h3>“Δ is oversold”</h3><span class="who">R1 · threatens the Greeks</span></div>
+  <div class="crit-body">
+    <div class="k">What they said</div>
+    <div class="v"><p>The abstract says Δ “can be hedged, allowing efficient pricing”. But your own pre-registered main test of Δ failed on Box A.</p></div>
+    <div class="k">What we tested</div>
+    <div class="v"><p>Re-ran the pre-registered tests after removing the three starting points whose outcome spans the 2021 satellite gap. This is the data fix R1 asked for, decided before the run.</p></div>
+    <div class="k">What we found</div>
+    <div class="v"><ul>
+      <li>Main test (does Δ predict which windows green more, within each pixel): <span class="verdict v-fail">fail</span> as registered; <span class="verdict v-pass">pass</span> without the gap steps, +.046 [+.014, +.078].</li>
+      <li>Δ sorts patches across the landscape: the top third greens about twice as much as the bottom third. <span class="verdict v-pass">pass</span></li>
+      <li>Hedging skill (does Δ beat a constant for prediction): <span class="verdict v-fail">fail</span> on both boxes.</li>
+    </ul></div>
+    <div class="k">What changes</div>
+    <div class="v change"><p>Drop “can be hedged, allowing efficient pricing”. Keep “exposure”: Δ is an exposure map. Report the registered failure first and the gap-free pass as a correction, in one sentence.</p></div>
+  </div>
+</article>
+
+<article class="crit p-idea" id="c7">
+  <div class="crit-head"><span class="id">C7</span><h3>The analogy, and tidying up</h3><span class="who">R1 · protects the idea</span></div>
+  <div class="crit-body">
+    <div class="k">The analogy</div>
+    <div class="v"><p>Add one sentence so a finance-literate reviewer can't knock it over: “The analogy is one of use, not foundation: implied volatility is unique under no-arbitrage; our residual is unique only given the fitted model.” It keeps the hook and closes the gap.</p></div>
+    <div class="k">Tidy-up</div>
+    <div class="v"><ul>
+      <li>Rename the neighbourhood mean (ā → n), which clashes with the tilde in Eq. 3.</li>
+      <li>Label the fire probe “exploratory, post hoc” in the main text.</li>
+      <li>One clause on rain memory: an 11-day half-life, longer on greener, wetter pixels.</li>
+      <li>Independent management data: none exists for these boxes. The proposed fence-line test, below, would be the first.</li>
+    </ul></div>
+  </div>
+</article>
+</div>
+
+<div class="wrap">
+<section>
+  <span class="eyebrow">Scorecard</span>
+  <h2>Every test, pass or fail</h2>
+  <p>Every test except the gap-free Δ rerun was written down before it ran. The failures make the paper more credible, as long as they are reported.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Question</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>Counterfactual right when management ignores rain?</td><td>Normal seasons <span class="verdict v-pass">yes</span> · droughts <span class="verdict v-fail">no</span> +18%</td></tr>
+      <tr><td>…when management reacts to rain?</td><td><span class="verdict v-fail">no</span> +47% in drought; becomes a stated assumption</td></tr>
+      <tr><td>…with 25% / 50% rain-data error?</td><td>Box scale <span class="verdict v-pass">yes</span> / <span class="verdict v-mixed">narrowly no</span> · pixel scale <span class="verdict v-fail">no</span></td></tr>
+      <tr><td>M2 competitive with strong baselines at 3 months?</td><td>A <span class="verdict v-pass">yes</span> · B <span class="verdict v-fail">no</span> (GBM 12% better)</td></tr>
+      <tr><td>Current state enough, no memory needed?</td><td>A <span class="verdict v-pass">yes</span> · B <span class="verdict v-fail">no</span>; diagnosis says drift, not memory</td></tr>
+      <tr><td>Rain dominant over temperature?</td><td><span class="verdict v-pass">yes</span></td></tr>
+      <tr><td>Temperature adds to rain?</td><td><span class="verdict v-fail">no</span> on later years (warming shift)</td></tr>
+      <tr><td>Δ main test, gap-free?</td><td><span class="verdict v-pass">pass</span> (a data correction, not registered as such)</td></tr>
+    </tbody></table></div>
+</section>
+
+<section>
+  <span class="eyebrow">Space</span>
+  <h2>It all fits without cutting the framing</h2>
+  <p>In the AAAI two-column format the current paper, with the new Related Work section, fills <b>about 4.6 of the 6 allowed pages</b>, references included; the appendix goes in a separate supplement. Every change above adds roughly half a page, so the spine stays as it is.</p>
+  <div class="budget" aria-label="Page budget">
+    <div class="brow"><span>Current paper</span><div class="btrack"><span style="width:76.7%;background:var(--ink)"></span></div><span class="num">4.6 pp</span></div>
+    <div class="brow"><span>+ all fixes (C1–C7)</span><div class="btrack"><span style="width:76.7%;background:var(--ink)"></span><span style="width:8.3%;background:var(--cf)"></span></div><span class="num">≈ 5.1 pp</span></div>
+    <div class="brow"><span>AgriAI limit</span><div class="btrack"><span style="width:100%;background:var(--line)"></span></div><span class="num">6.0 pp</span></div>
+  </div>
+</section>
+
+<section id="tests">
+  <span class="eyebrow">Next</span>
+  <h2>The two proposed tests, and the weakness each closes</h2>
+  <p><b>TLDR.</b> The fence-line test closes the biggest hole left: nothing yet shows that the residual tracks <i>real</i> management on <i>real</i> land. The foundation-model baseline heads off the question every 2026 time-series reviewer asks. Run the fence-line test first.</p>
+  <div class="tests">
+    <div class="test">
+      <span class="eyebrow">Test 1 · fence-line and invasion check</span>
+      <h3>Does the residual see management that actually happened?</h3>
+      <dl>
+        <dt>Shores up</dt><dd><b>C1</b> and pillar 3, attribution. The planted-signal test shows the method recovers management <i>if</i> management is there. It cannot show that the real residual contains real management. R1 asked for independent management data and we had none. This test is that data.</dd>
+        <dt>Idea</dt><dd>Compare the residual on properties with documented management events against matched neighbouring land. Box B (held out in every year) holds Mpala, Ol Jogi, Loisaba and part of Suyian, all named in the 2017 drought invasions, when roughly 100,000 cattle moved onto private land from January to March. Box A holds Lewa, Borana and Il Ngwesi, and 2022 is a held-out year there.</dd>
+        <dt>Pre-registered prediction</dt><dd>On invaded properties the residual falls during the invasion windows, relative to matched land across the boundary, and recovers afterwards. Normal-rain seasons show no gap.</dd>
+        <dt>Why AgriAI cares</dt><dd>“Field validation” is in their call. It also makes the fairness argument concrete: the model tells management regimes apart on the ground.</dd>
+        <dt>Data</dt><dd>OpenStreetMap polygons exist for every named property (ODbL licence). WDPA holds only forest reserves here. Cross-check the outlines against the Laikipia Wildlife Forum or NRT maps.</dd>
+        <dt>Pitfalls</dt><dd>Invasions hit some properties and not others, so code management per property and per year, not by tenure type. Drop pixels within about 500 m of a boundary. Mask cropland at Timau. Elephants browse harder inside conservancies, so wildlife is in the residual too. Box A 2017 is a training year.</dd>
+        <dt>Cost</dt><dd>About 2 days. It could fail, and should be reported either way.</dd>
+      </dl>
+    </div>
+    <div class="test">
+      <span class="eyebrow">Test 2 · zero-shot foundation model</span>
+      <h3>Why not a foundation model?</h3>
+      <dl>
+        <dt>Shores up</dt><dd><b>C2</b> and pillar 2, “the model works”. It answers the reflex question before a reviewer asks it. AgriAI's call names time-series foundation models; organiser Arjunan works on them; and last year's AgriAI ran a zero-shot Sundial forecast of leaf area index (Zhang et al., UConn).</dd>
+        <dt>Idea</dt><dd>Chronos-2 (Amazon, Oct 2025, Apache-2.0) takes rain as a built-in covariate, so it can be run twice: history only, a strong M0; and with rain, a strong rain-aware rival. Score both on the same one-step and three-month error metric (CRPS).</dd>
+        <dt>Pre-registered prediction</dt><dd>History-only lags M2 at three months, because rain matters. With rain it may come close to M2 or beat it, and it still yields no per-step residual and no structural state to rerun under normal rain.</dd>
+        <dt>Risk</dt><dd>It may beat M2 outright, much like GBM on Box B. That is fine if the paper's claim stays “invertible and differentiable”, not “best forecaster”. Sundial needed 512+ steps of history to win in the LAI paper, and a 2019 start gives about 370 here.</dd>
+        <dt>Cost</dt><dd>About a day: roughly 4–8 GPU-hours for 25,600 pixels × 150 starting points.</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<footer>Sources: revision/REVISION.md, Triage.md, runs/20261006_* · Paper: paper/agriai/main.tex · Built 13 October 2026.</footer>
+</div>
