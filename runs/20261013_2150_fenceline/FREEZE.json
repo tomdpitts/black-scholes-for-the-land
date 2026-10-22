@@ -1,0 +1,29 @@
+{
+ "frozen_utc": "2026-10-13T11:39:26Z",
+ "git": {
+  "head": "56c7d66d3afd8a671dd1f2e1bc62d12d810a950f",
+  "status_short": "?? explainer/revision_map.html\n?? paper/agriai/\n?? revision/AAAI_STRATEGY.md\n?? revision/fenceline/\n?? wdpa.json"
+ },
+ "sha256": {
+  "runs/20261013_2150_fenceline/PREREG.md": "651f0ebb6937c2fc23c21c30c92cc61587f9eb37a65eac27dda263cf6913e776",
+  "runs/20261013_2150_fenceline/inputs/exposure/exposure.csv": "38fed2946cfa05bcfbd55f140db6590f2f7c88bfac6b48c1bf68eb9b551f5733",
+  "runs/20261013_2150_fenceline/inputs/exposure/years.csv": "04491632db2fec5dab28cbbf6724407944c2a046220afeb54e19cc2da2d54444",
+  "runs/20261013_2150_fenceline/design/design.npz": "189e16b06003fd67537605d630dc655eb62343158f0bdc89b1dbddcd4c7e3aa9",
+  "runs/20261013_2150_fenceline/design/design_meta.json": "388207e2b60436b26e6ecb9ba4389f490d263cc7d286e97163783d64abbd777c",
+  "runs/20261013_2150_fenceline/design/s4_line_splits.npz": "03ee8949acb04b52fd88b1919268f20b9e9185a29e8ce4b7696718e7a46403c6",
+  "runs/20260914_1708_pipeline_h100_fairfight/params.npy": "1b612ac35f3a2d2a26820e5ccb446d1e9208f44baa8669995bdcf7cec76a4e03",
+  "data/B/built.npz": "f66f0ef7acd2ed918f4165b1122220f49c5d4f245c3706b869aa6f1aaf9046cc",
+  "model.py": "3b6953b73650c2094ade12e0192bf5091950f052f21297b527a63f131018a727",
+  "revision/fenceline/fl_common.py": "9da7e4fa5035fcbabfdf3879dd7d480b48e4e72c6aeb4ed3f5ae6d1721f14153",
+  "revision/fenceline/s00_init.py": "a9f84be295f0b53e442b6230cf3a4e2126fb878dcd87131f1e9c63140666bab7",
+  "revision/fenceline/s01_boundaries.py": "96075f979b8cc26b37275e7e6718378a2e77c3564a281c36d34a2eba5a1ede92",
+  "revision/fenceline/s01b_boundaries_nominatim.py": "00178fe9e689d73fc9583c738c445ac10b425a54975c682137f3b0b5a170f714",
+  "revision/fenceline/s01c_overlap.py": "50e931f1aec098d9c3489282ca0826582004ae0d9e9e5f21990802501d3ad6a9",
+  "revision/fenceline/s02_covariates.py": "d84cbc479b70acd356863707a39baaaa14dacf8ff7a225d3acff7730ea852e95",
+  "revision/fenceline/s03_design.py": "340513d35579642bda5f3585634659308c5ce20a611f14ef82fd9b225c4a60f9",
+  "revision/fenceline/s03b_placebo_space.py": "31edba5930b983822b1e82f199b22da65eb04c22618cba98f73caf1f05525966",
+  "revision/fenceline/s04_freeze.py": "552cac423e9497ed038197f9c3a00377caa61c8e6d7a555332561e3d20172a93",
+  "revision/fenceline/s05_outcomes.py": "cc30e0ae2760519da0c43734421f817fe6aa4a43dc693dd527f23a48eb0a0a3f",
+  "revision/fenceline/s06_analysis.py": "4f041483925cd81cd4da3d8ab556cb690d2da5b62d300e9db4a8dd4ce908d4f0"
+ }
+}

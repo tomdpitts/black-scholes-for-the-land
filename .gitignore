@@ -1,6 +1,15 @@
 .venv/
 data/
-runs/
+# Run outputs stay local; each run's pre-registration and write-up are tracked
+runs/*
+!runs/*/
+runs/*/*
+!runs/*/PREREG.md
+!runs/*/PREREG.sha256
+!runs/*/RESULT.md
+!runs/*/DEVIATIONS.md
+!runs/*/LOG.md
+!runs/*/FREEZE.json
 __pycache__/
 *.pyc
 paper/*.aux

@@ -1,0 +1,388 @@
+# Fence-line test: audit log
+
+Append-only. One line per event, UTC. Machine-readable twin: `log.jsonl`.
+
+- `2026-10-13T10:51:28Z` **00_init** start
+    - script: revision/fenceline/s00_init.py
+    - script_sha256: a9f84be295f0b53e442b6230cf3a4e2126fb878dcd87131f1e9c63140666bab7
+    - fl_common_sha256: cd810e78ec4d6f8b86c9d7fe400c6adcd05000e46bd7379acc3c5c67a6eb6e44
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T10:51:28Z` **00_init** environment
+    - platform: macOS-26.6.2-arm64-arm-64bit
+    - numpy: 2.2.6
+    - jax: 0.6.2
+    - scipy: 1.15.3
+    - rasterio: 1.4.4
+    - venv: /Users/tompitts/dphil/ProjectB/.venv/bin/python
+- `2026-10-13T10:51:28Z` **00_init** git state at start
+    - head: 56c7d66d3afd8a671dd1f2e1bc62d12d810a950f
+    - status_short: ?? explainer/revision_map.html
+?? paper/agriai/
+?? revision/AAAI_STRATEGY.md
+?? revision/fenceline/
+?? wdpa.json
+- `2026-10-13T10:51:28Z` **00_init** read-only inputs hashed (never written by this run)
+    - model_params: runs/20260914_1708_pipeline_h100_fairfight/params.npy sha256=1b612ac35f3a2d2a26820e5ccb446d1e9208f44baa8669995bdcf7cec76a4e03
+    - data_B: data/B/built.npz sha256=f66f0ef7acd2ed918f4165b1122220f49c5d4f245c3706b869aa6f1aaf9046cc
+    - model_py: model.py sha256=3b6953b73650c2094ade12e0192bf5091950f052f21297b527a63f131018a727
+    - run_py: run.py sha256=e80cc6b858e038b67d7a8f5c3963dfa76118492e6323c1c23c1555f1521f0da5
+    - aoi_py: aoi.py sha256=ce2c5b160b43f991927ac71cda24f497b1b5e2385a5b7df2a68f1d37514db563
+    - fire_B: data/B/fire.npz sha256=04ebc37f43164362e684a39562c4cf65c65a0d0dfede2e87947026698912a76d
+    - dem_B: data/B/dem.npz sha256=f3fa84f98be374322d274bfb2a22de100992aa53db435ce84541cf5f611e7a9d
+- `2026-10-13T10:51:28Z` **00_init** grid check: Box B bounds, resolution and size match aoi.py
+    - box: (36.7, 0.25, 37.1, 0.65)
+    - res: 0.0025
+    - n: 160
+- `2026-10-13T10:51:28Z` **00_init** blinding statement
+    - note: Before this run, no property-level residual for Box B has been computed or viewed in this project: earlier runs used Box A for residual maps; runs/20261006_1753_identify reports only box-wide residual-vs-rain bins for Box B. Outcomes for this test are computed only after FREEZE.json.
+- `2026-10-13T10:51:54Z` **01_boundaries** start
+    - script: revision/fenceline/s01_boundaries.py
+    - script_sha256: 0060a71ca8a7ecf601c7b1af960b989436ef753add7cef488a11203d3d448ebb
+    - fl_common_sha256: cd810e78ec4d6f8b86c9d7fe400c6adcd05000e46bd7379acc3c5c67a6eb6e44
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T10:51:54Z` **01_boundaries** precision on blinding statement
+    - note: revision/identify.py computed per-pixel Box B residuals in memory but saved only box-wide binned summaries (metrics.json, sensitivity.json); no Box B map or property-level summary exists.
+- `2026-10-13T10:52:14Z` **01_boundaries** FAILED attempt 1: overpass-api.de returned 504 Gateway Timeout; no file written. Retrying with mirrors and a lighter query.
+- `2026-10-13T10:52:14Z` **01_boundaries** start
+    - script: revision/fenceline/s01_boundaries.py
+    - script_sha256: 96075f979b8cc26b37275e7e6718378a2e77c3564a281c36d34a2eba5a1ede92
+    - fl_common_sha256: cd810e78ec4d6f8b86c9d7fe400c6adcd05000e46bd7379acc3c5c67a6eb6e44
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T10:54:14Z` **01_boundaries** mirror failed
+    - url: https://overpass.kumi.systems/api/interpreter
+    - error: HTTPError('504 Server Error: Gateway Timeout for url: https://overpass.kumi.systems/api/interpreter')
+- `2026-10-13T10:54:41Z` **02_covariates** start
+    - script: revision/fenceline/s02_covariates.py
+    - script_sha256: d84cbc479b70acd356863707a39baaaa14dacf8ff7a225d3acff7730ea852e95
+    - fl_common_sha256: cd810e78ec4d6f8b86c9d7fe400c6adcd05000e46bd7379acc3c5c67a6eb6e44
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T10:54:47Z` **02_covariates** WorldCover 2021 class fractions on Box-B grid
+    - url: https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N00E036_Map.tif
+    - window_rowcol: (28200, 8400)
+    - seconds: 5.2
+    - file: runs/20261013_2150_fenceline/inputs/covariates/worldcover2021_fractions.npz
+    - sha256: 348acd443cf081d3a1f7b857e028d874d5b747f7c6cec3af4612d77534fde325
+    - box_mean_fractions: {'tree': 0.0009, 'shrub': 0.3349, 'grass': 0.6528, 'crop': 0.0083, 'built': 0.0002, 'bare': 0.0024, 'snow': 0.0, 'water': 0.0005, 'wetland': 0.0, 'mangrove': 0.0, 'moss': 0.0}
+- `2026-10-13T10:54:49Z` **02_covariates** SoilGrids clay 5-15 cm averaged onto Box-B grid
+    - url: https://maps.isric.org/mapserv?map=/map/clay.map&SERVICE=WCS&VERSION=2.0.1&REQUEST=GetCoverage&COVERAGEID=clay_5-15cm_mean&FORMAT=image/tiff&SUBSET=long(36.68,37.120000000000005)&SUBSET=lat(0.23,0.67)&SUBSETTINGCRS=http://www.opengis.net/def/crs/EPSG/0/4326&OUTPUTCRS=http://www.opengis.net/def/crs/EPSG/0/4326
+    - seconds: 2.5
+    - raw: runs/20261013_2150_fenceline/inputs/covariates/soilgrids_clay_5-15cm_raw.tif
+    - raw_sha256: a5ce72e06ad5de19f2e75ad81a7fc25bacfb179b16f7d3eed8c8afc620047d1c
+    - file: runs/20261013_2150_fenceline/inputs/covariates/clay_5-15cm_gkg.npy
+    - sha256: 8694333ca19b7ca52e6e323de4259945fdda4031729ed58e996f5bca7b0f47d4
+    - nan_pixels: 0
+    - clay_p5_p50_p95: [311.9, 382.2, 439.2]
+- `2026-10-13T10:55:45Z` **prereg** PREREG.md drafted (not yet frozen; edits before FREEZE.json are logged with hashes)
+    - sha256: f017848463bbfcbf2099d92261c47b15a506b86bf88f48b35287f8abee239a42
+- `2026-10-13T10:58:15Z` **01_boundaries** mirror failed
+    - url: https://overpass.private.coffee/api/interpreter
+    - error: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='overpass.private.coffee', port=443): Read timed out. (read timeout=240)"))
+- `2026-10-13T10:58:25Z` **01_boundaries** mirror failed
+    - url: https://overpass-api.de/api/interpreter
+    - error: HTTPError('504 Server Error: Gateway Timeout for url: https://overpass-api.de/api/interpreter')
+- `2026-10-13T10:59:13Z` **01b_boundaries** start
+    - script: revision/fenceline/s01b_boundaries_nominatim.py
+    - script_sha256: 00178fe9e689d73fc9583c738c445ac10b425a54975c682137f3b0b5a170f714
+    - fl_common_sha256: 9da7e4fa5035fcbabfdf3879dd7d480b48e4e72c6aeb4ed3f5ae6d1721f14153
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T10:59:13Z` **01b_boundaries** method change before freeze: Overpass unavailable (3 servers, 504/timeouts); using Nominatim name search with polygon_geojson
+- `2026-10-13T11:00:26Z` **01b_boundaries** Nominatim polygons saved
+    - queries: 34
+    - raw: runs/20261013_2150_fenceline/inputs/osm/nominatim_raw.json
+    - raw_sha256: 9d18e3bb2ff138b1bf09a47b5697af52e088ee646dfe4b728adb275228b7cbed
+    - file: runs/20261013_2150_fenceline/inputs/osm/polygons.geojson
+    - sha256: 32811491d118ea695f4440e53b3849c783bde2befff0b8bbd254481c45631104
+    - n_polygons: 44
+    - polygons: way/1068001570 Chololo Ranch [leisure/nature_reserve]; way/1039318180 El Karama Ranch [leisure/nature_reserve]; way/1039318177 Enasoit Conservancy [leisure/nature_reserve]; way/1028186568 Ewaso Enclave Conservancy [leisure/nature_reserve]; way/577151618 Il Polei [place/village]; way/1163929091 Kipepeo Conservancy [leisure/nature_reserve]; way/1039318181 Kirimon Community Conservancy [leisure/nature_reserve]; relation/20771252 Kudura Conservancy [leisure/nature_reserve]; way/556031802 Loisaba Colcheccio Dam [water/reservoir]; relation/15587837 Loisaba Conservancy [leisure/nature_reserve]; way/1039318183 Loldaiga Hills Conservancy [leisure/nature_reserve]; way/1481396459 Lorien Conservancy [leisure/nature_reserve]; relation/20771254 Maiyanat Community Conservancy [leisure/nature_reserve]; way/1162851443 Mar Mar Ranch [leisure/nature_reserve]; way/1264905366 Mogwooni Ranch [boundary/landuse]; way/1033981689 Mpala Ranch [leisure/nature_reserve]; relation/17964883 Mugie Conservancy;Mugie Wildlife Conservancy [leisure/nature_reserve]; way/1029856629 Naibunga Central Community Conservancy [leisure/nature_reserve]; way/1039318174 Naibunga Lower Community Conservancy [leisure/nature_reserve]; way/1043632605 Naibunga Upper Community Conservancy [leisure/nature_reserve]; way/1029856631 Naibunga Upper Community Conservancy [leisure/nature_reserve]; way/1054468264 Nanapa Community Conservancy [leisure/nature_reserve]; way/1306367716 Nareto Conservancy [leisure/nature_reserve]; way/1133565926 Narupa Community Conservancy [leisure/nature_reserve]; way/1272777168 Naserian Wildlife Conservancy [leisure/nature_reserve]; way/1068001572 Ngorare Ranch [leisure/nature_reserve]; relation/14072902 Nkoteiya Community Conservancy [leisure/nature_reserve]; way/1033981690 Ol Jogi Conservancy [leisure/nature_reserve]; way/1043128006 Ol Lentille Conservancy [leisure/nature_reserve]; way/1156893673 Ol Maisor Farm [landuse/farmyard]; way/1054467559 Ol Maisor ranch [leisure/nature_reserve]; way/1131981178 Ol Malo Conservancy [leisure/nature_reserve]; way/643334391 Ol Malo Grevy Reservoir [water/reservoir]; way/643334392 Ol Malo Ndovu Reservoir [water/reservoir]; way/562232925 Ol Malo Reservoir [water/reservoir]; way/643334393 Ol Malo Suiyan Reservoir [water/reservoir]; way/1210272286 Pinguaan Conservancy [leisure/nature_reserve]; way/1068001571 Segera Conservancy [leisure/nature_reserve]; way/532720607 Segera Ranch Airstrip [aeroway/runway]; relation/17581070 Shulmai Conservancy [leisure/nature_reserve]; way/1052268863 Sosian Conservancy [leisure/nature_reserve]; way/1052268862 Suyian Conservancy [leisure/nature_reserve]; way/1212807887 Tangomaos Conservancy [leisure/nature_reserve]; way/1133565925 Tumaren Conservancy [leisure/nature_reserve]
+- `2026-10-13T11:00:37Z` **01c_overlap** start
+    - script: revision/fenceline/s01c_overlap.py
+    - script_sha256: 50e931f1aec098d9c3489282ca0826582004ae0d9e9e5f21990802501d3ad6a9
+    - fl_common_sha256: 9da7e4fa5035fcbabfdf3879dd7d480b48e4e72c6aeb4ed3f5ae6d1721f14153
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T11:00:37Z` **01c_overlap** polygons overlapping Box B
+    - file: runs/20261013_2150_fenceline/inputs/osm/overlap_box_B.json
+    - sha256: 05d3d5e24d66653ac576835e2e301f15c8655ab37b66bdb0c9e4271071351d7e
+    - overlap: Ol Jogi Conservancy (way/1033981690) 2879 px; Mpala Ranch (way/1033981689) 2527 px; Loisaba Conservancy (relation/15587837) 2514 px; Naibunga Lower Community Conservancy (way/1039318174) 1912 px; Narupa Community Conservancy (way/1133565926) 1853 px; Suyian Conservancy (way/1052268862) 1764 px; Segera Conservancy (way/1068001571) 1332 px; Naibunga Central Community Conservancy (way/1029856629) 1264 px; Ol Lentille Conservancy (way/1043128006) 1021 px; Nanapa Community Conservancy (way/1054468264) 1008 px; Ngorare Ranch (way/1068001572) 883 px; Chololo Ranch (way/1068001570) 793 px; Ewaso Enclave Conservancy (way/1028186568) 612 px; Naibunga Upper Community Conservancy (way/1029856631) 553 px; Tumaren Conservancy (way/1133565925) 489 px; Sosian Conservancy (way/1052268863) 310 px; Kipepeo Conservancy (way/1163929091) 296 px; Mogwooni Ranch (way/1264905366) 165 px; Enasoit Conservancy (way/1039318177) 129 px; Tangomaos Conservancy (way/1212807887) 115 px; Ol Malo Conservancy (way/1131981178) 97 px; Loldaiga Hills Conservancy (way/1039318183) 57 px; Kirimon Community Conservancy (way/1039318181) 31 px; Lorien Conservancy (way/1481396459) 31 px; El Karama Ranch (way/1039318180) 28 px; Naibunga Upper Community Conservancy (way/1043632605) 13 px; Nareto Conservancy (way/1306367716) 10 px; Il Polei (way/577151618) 7 px
+- `2026-10-13T11:01:04Z` **03_design** pre-freeze code change: design now reads inputs/osm/polygons.geojson (Nominatim) instead of overpass_raw.json; relation-stitching code removed (Nominatim returns assembled geometry)
+    - script_sha256: 214698ba96af1fdef6bcc0db44d167356bdf68b746bb7a1f32e72c8cab5470c8
+- `2026-10-13T11:01:19Z` **prereg** PREREG.md edited before freeze: polygon source line updated (Nominatim)
+    - sha256: fb27e30d603afe60a262d302101fb4a4a9ba663b17bc4a0e91241868bc9340bd
+- `2026-10-13T11:01:50Z` **03_design** DRY RUN of s03 in scratch with a dummy 4-row exposure file (labelled DRYRUN), outputs discarded; purpose: code test only, no outcome read
+    - scratch: scratchpad/fl_dry
+    - result: code ran end to end; clim_rain SMD 0.141 after matching under dummy coding
+- `2026-10-13T11:01:50Z` **prereg** PREREG.md edited before freeze: balance rule added (halve caliper once if any |SMD|>0.1)
+    - sha256: e782c6b51c69a4d0c461298fb9a497c66cf26b2f9a43c65bff4ed912a6481396
+- `2026-10-13T11:01:50Z` **03_design** pre-freeze code change: balance rule implemented
+    - script_sha256: 340513d35579642bda5f3585634659308c5ce20a611f14ef82fd9b225c4a60f9
+- `2026-10-13T11:02:32Z` **05_outcomes** pre-freeze bug fix found by Box-A dry run: D now includes rclim (needed by model.w_path initial state)
+    - script_sha256: cc30e0ae2760519da0c43734421f817fe6aa4a43dc693dd527f23a48eb0a0a3f
+- `2026-10-13T11:37:00Z` **exposure** exposure research received and archived (agent report verbatim + 562 evidence files)
+    - report_sha256: 903e2757fb593d7a713212a0c65bf276a7b8354bb98ff133fe3e379c71b090de
+    - evidence_manifest_sha256: 373ba6dcbe395771d37a0ac57b7184c961f7bfb3e34fce07fdaabb7960d28cb6
+- `2026-10-13T11:37:00Z` **exposure** exposure coding written (before any outcome)
+    - exposure_csv_sha256: 38fed2946cfa05bcfbd55f140db6590f2f7c88bfac6b48c1bf68eb9b551f5733
+    - years_csv_sha256: 04491632db2fec5dab28cbbf6724407944c2a046220afeb54e19cc2da2d54444
+    - treated_2017: ['Ol Jogi (light, thin_conflicting)', 'Mpala (light, thin)', 'Loisaba (heavy, dated_month)', 'Suyian (heavy, dated_day)', 'Sosian (heavy, dated_day)', 'Segera (heavy, secondhand)', 'Ol Malo (light, thin)', 'Ngorare (light, inferred)']
+    - years_coded_1: ['2015', '2017']
+    - years_coded_A: ['2006', '2008', '2009', '2012', '2014', '2016', '2021', '2022', '2023']
+    - years_coded_0: ['2003', '2004', '2005', '2007', '2010', '2011', '2013', '2018', '2019', '2020', '2024', '2025']
+- `2026-10-13T11:37:23Z` **prereg** PREREG Amendment 1 appended before freeze (tenure rule, ambiguous-year rule + S10, S3 ranks, control-pool caveats)
+    - sha256: 6d50f03d740b29b8f5c3063a0ef16ef10c8aa2de4bc137f9ac2b78266baf1836
+- `2026-10-13T11:37:23Z` **06_analysis** pre-freeze code change implementing Amendment 1 (clean_years, S10, S3 ranks)
+    - script_sha256: 99a076c0a0b4f945955de58aa5053faf1664156e1ec660a3cf9af660e178b732
+- `2026-10-13T11:37:49Z` **06_analysis** DRY RUN 2 in scratch (Box A data, dummy design, real years.csv): amended s06 runs end to end; outputs discarded, values not inspected
+- `2026-10-13T11:37:50Z` **03_design** start
+    - script: revision/fenceline/s03_design.py
+    - script_sha256: 340513d35579642bda5f3585634659308c5ce20a611f14ef82fd9b225c4a60f9
+    - fl_common_sha256: 9da7e4fa5035fcbabfdf3879dd7d480b48e4e72c6aeb4ed3f5ae6d1721f14153
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T11:37:50Z` **03_design** polygons rasterised
+    - n_properties: 27
+    - pixels_by_property: {'Ol Jogi': 2879, 'Mpala': 2527, 'Loisaba': 2514, 'Suyian': 1764, 'Sosian': 310, 'Segera': 1332, 'Ol Malo': 97, 'Ngorare': 883, 'El Karama': 28, 'Mogwooni': 165, 'Enasoit': 129, 'Lolldaiga': 57, 'Ol Lentille': 1021, 'Tangomaos': 115, 'Chololo': 793, 'Ewaso Enclave': 612, 'Tumaren': 489, 'Kipepeo': 296, 'Lorien': 31, 'Nareto': 10, 'Kirimon / Laikipia National Game Reserve': 31, 'Il Polei village': 7, 'Naibunga Lower': 1912, 'Naibunga Central': 1264, 'Naibunga Upper': 566, 'Narupa': 1853, 'Nanapa': 1008}
+    - treated_properties: ['Ol Jogi', 'Mpala', 'Loisaba', 'Suyian', 'Sosian', 'Segera', 'Ol Malo', 'Ngorare']
+- `2026-10-13T11:37:50Z` **03_design** static mask
+    - eligible_pixels: 22940
+    - dropped: {'crop': 320, 'built': 10, 'water_wetland': 35, 'x0_above_p95': 1280, 'edge': 1264}
+- `2026-10-13T11:37:50Z` **03_design** groups
+    - treated_pixels: 8386
+    - treated_by_property: {'Ol Jogi': 2128, 'Mpala': 1802, 'Loisaba': 1946, 'Suyian': 1236, 'Sosian': 57, 'Segera': 872, 'Ol Malo': 13, 'Ngorare': 332}
+    - control_pool_pixels: 7371
+    - community_polygon_controls: 5155
+- `2026-10-13T11:37:50Z` **03_design** matching
+    - k: 5
+    - caliper: 1.0
+    - treated_matched: 7301
+    - dropped_by_caliper: 1085
+    - median_nn_distance: 0.574
+    - balance_smd: {'before': {'mean_ndvi': 1.372, 'amplitude': 1.312, 'clim_rain': 0.782, 'elevation': 0.855, 'slope': -0.304, 'clay': 0.571}, 'after': {'mean_ndvi': 0.062, 'amplitude': 0.104, 'clim_rain': 0.007, 'elevation': -0.012, 'slope': 0.016, 'clay': -0.008}}
+- `2026-10-13T11:37:50Z` **03_design** balance rule triggered: caliper halved once (final)
+    - caliper: 0.5
+    - treated_matched: 2697
+    - dropped_by_caliper: 5689
+    - balance_smd: {'before': {'mean_ndvi': 1.372, 'amplitude': 1.312, 'clim_rain': 0.782, 'elevation': 0.855, 'slope': -0.304, 'clay': 0.571}, 'after': {'mean_ndvi': 0.033, 'amplitude': 0.036, 'clim_rain': 0.018, 'elevation': -0.036, 'slope': 0.007, 'clay': -0.003}}
+- `2026-10-13T11:37:50Z` **03_design** S6 community-only matching
+    - eligible: 5155
+    - matched: 418
+    - dropped: 7968
+- `2026-10-13T11:37:51Z` **03_design** S4 placebo-in-space translations
+    - seed: 20171
+    - requested: 200
+    - kept: 0
+    - tries: 20000
+- `2026-10-13T11:37:51Z` **03_design** design saved
+    - design: runs/20261013_2150_fenceline/design/design.npz
+    - design_sha256: 189e16b06003fd67537605d630dc655eb62343158f0bdc89b1dbddcd4c7e3aa9
+    - meta: runs/20261013_2150_fenceline/design/design_meta.json
+    - meta_sha256: 388207e2b60436b26e6ecb9ba4389f490d263cc7d286e97163783d64abbd777c
+- `2026-10-13T11:37:51Z` **03_design** design map
+    - file: runs/20261013_2150_fenceline/design/design_map.png
+    - sha256: 603c929cc417cbbc0c107b3019363d0a6745f1995387d980543f650509d96171
+- `2026-10-13T11:38:35Z` **03b_placebo_space** start
+    - script: revision/fenceline/s03b_placebo_space.py
+    - script_sha256: 31edba5930b983822b1e82f199b22da65eb04c22618cba98f73caf1f05525966
+    - fl_common_sha256: 9da7e4fa5035fcbabfdf3879dd7d480b48e4e72c6aeb4ed3f5ae6d1721f14153
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T11:38:39Z` **03b_placebo_space** S4 replacement: random line splits of the control pool
+    - seed: 20171
+    - kept: 200
+    - draws: 205
+    - caliper: 0.5
+    - min_matched: 100
+    - median_fake_treated_matched: 576
+    - file: runs/20261013_2150_fenceline/design/s4_line_splits.npz
+    - sha256: 03ee8949acb04b52fd88b1919268f20b9e9185a29e8ce4b7696718e7a46403c6
+- `2026-10-13T11:39:00Z` **prereg** PREREG Amendment 2 appended before freeze (S4 replaced by line splits; balance-rule outcome recorded)
+    - sha256: 651f0ebb6937c2fc23c21c30c92cc61587f9eb37a65eac27dda263cf6913e776
+- `2026-10-13T11:39:00Z` **06_analysis** pre-freeze code change: S4 reads design/s4_line_splits.npz; s04 freezes it
+    - s06_sha256: 4f041483925cd81cd4da3d8ab556cb690d2da5b62d300e9db4a8dd4ce908d4f0
+    - s04_sha256: 552cac423e9497ed038197f9c3a00377caa61c8e6d7a555332561e3d20172a93
+- `2026-10-13T11:39:26Z` **06_analysis** DRY RUN 3 in scratch (Box A data, dummy design): s03b + amended s06 run end to end; outputs discarded, values not inspected
+- `2026-10-13T11:39:26Z` **04_freeze** start
+    - script: revision/fenceline/s04_freeze.py
+    - script_sha256: 552cac423e9497ed038197f9c3a00377caa61c8e6d7a555332561e3d20172a93
+    - fl_common_sha256: 9da7e4fa5035fcbabfdf3879dd7d480b48e4e72c6aeb4ed3f5ae6d1721f14153
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T11:39:26Z` **04_freeze** FROZEN
+    - file: runs/20261013_2150_fenceline/FREEZE.json
+    - freeze_sha256: cf9420af66a3ff4f65dfd9b691d88ee0135f9a4971750682a14897651943c00b
+    - prereg_sha256: 651f0ebb6937c2fc23c21c30c92cc61587f9eb37a65eac27dda263cf6913e776
+- `2026-10-13T11:39:29Z` **05_outcomes** start
+    - script: revision/fenceline/s05_outcomes.py
+    - script_sha256: cc30e0ae2760519da0c43734421f817fe6aa4a43dc693dd527f23a48eb0a0a3f
+    - fl_common_sha256: 9da7e4fa5035fcbabfdf3879dd7d480b48e4e72c6aeb4ed3f5ae6d1721f14153
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T11:39:29Z` **05_outcomes** freeze verified
+    - changed_scripts_declared_in_deviations: []
+- `2026-10-13T11:39:32Z` **05_outcomes** MAM seasons computed
+    - n: 23
+    - years: [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+    - gap_flagged: [2023]
+    - start_dates: ['2003-02-18', '2004-02-18', '2005-02-18', '2006-02-18', '2007-02-18', '2008-02-18', '2009-02-18', '2010-02-18', '2011-02-18', '2012-02-18', '2013-02-18', '2014-02-18', '2015-02-18', '2016-02-18', '2017-02-18', '2018-02-18', '2019-02-18', '2020-02-18', '2021-02-18', '2022-02-18', '2023-02-02', '2024-02-18', '2025-02-18']
+- `2026-10-13T11:39:32Z` **05_outcomes** JF seasons computed
+    - n: 23
+    - years: [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+    - gap_flagged: [2022, 2023, 2025]
+    - start_dates: ['2002-12-19', '2003-12-19', '2004-12-18', '2005-12-19', '2006-12-19', '2007-12-19', '2008-12-18', '2009-12-19', '2010-12-19', '2011-12-19', '2012-12-18', '2013-12-19', '2014-12-19', '2015-12-19', '2016-12-18', '2017-12-19', '2018-12-19', '2019-12-19', '2020-12-18', '2021-11-01', '2022-12-19', '2023-12-19', '2024-12-02']
+- `2026-10-13T11:39:32Z` **05_outcomes** sanity: MAM 2017 start
+    - start: 2017-02-18
+    - first_window: 2017-03-06
+    - last_window: 2017-05-25
+- `2026-10-13T11:39:33Z` **05_outcomes** outcomes saved
+    - file: runs/20261013_2150_fenceline/outputs/outcomes.npz
+    - sha256: 283c7d43dd6a9d2e77a5f23c946a18f3670f26174a667d763af0b30f599cfa0f
+- `2026-10-13T11:39:36Z` **06_analysis** start
+    - script: revision/fenceline/s06_analysis.py
+    - script_sha256: 4f041483925cd81cd4da3d8ab556cb690d2da5b62d300e9db4a8dd4ce908d4f0
+    - fl_common_sha256: 9da7e4fa5035fcbabfdf3879dd7d480b48e4e72c6aeb4ed3f5ae6d1721f14153
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T11:39:36Z` **06_analysis** freeze verified
+    - changed_scripts_declared_in_deviations: []
+- `2026-10-13T11:39:37Z` **06_analysis** P1 placebo-in-time
+    - D_2017: 0.009741720655559389
+    - rank_among_all: 13
+    - n_placebo: 20
+    - p_one_sided: 0.6190476190476191
+    - placebo_median: 0.004939285400408173
+    - placebo_min: -0.019341971235426435
+    - placebo_max: 0.026058983456372416
+    - verdict: fail
+    - n_treated_pixels_2017: 2697
+- `2026-10-13T11:39:37Z` **06_analysis** S1 drought-adjusted
+    - slope_D_per_mm: -1.5091546099287759e-05
+    - intercept: 0.004158575212639107
+    - r: -0.1144324659590432
+    - rain_dep_2017_mm: -109.25599670410156
+    - D_pred_2017: 0.005807417123522687
+    - t: 0.26416061875599245
+    - df: 18
+    - p_one_sided: 0.6026715393823515
+    - rank_among_five_driest_plus_2017: 4
+    - rain_dep_rank_2017_among_all: 1
+    - verdict: fail
+- `2026-10-13T11:39:37Z` **06_analysis** S2 per property
+    - Ol Jogi: D=+0.0433 rank 17/21 n=220 dose=light
+    - Mpala: D=+0.0079 rank 11/21 n=1083 dose=light
+    - Loisaba: D=+0.0094 rank 13/21 n=438 dose=heavy
+    - Suyian: D=+0.0588 rank 19/21 n=356 dose=heavy
+    - Sosian: D=+0.0044 rank 12/21 n=34 dose=heavy
+    - Segera: D=-0.0232 rank 7/21 n=441 dose=heavy
+    - Ol Malo: D=-0.0034 rank 7/21 n=2 dose=light
+    - Ngorare: D=-0.0549 rank 2/21 n=123 dose=light
+- `2026-10-13T11:39:37Z` **06_analysis** S3 dose
+    - heavy: D=+0.0118 n=1269 rank 14/21 p=0.667
+    - light: D=+0.0079 n=1428 rank 11/21 p=0.524
+- `2026-10-13T11:39:39Z` **06_analysis** S4 placebo-in-space
+    - design: random line splits of control pool (Amendment 2)
+    - n_splits: 200
+    - D_true: 0.009741720655559389
+    - p_one_sided: 0.9950248756218906
+    - fake_median: -0.01622077330831858
+    - fake_p5: -0.030731137768917602
+- `2026-10-13T11:39:39Z` **06_analysis** S5 Jan-Feb
+    - D_2017: 0.0033517572608896215
+    - rank_among_all: 12
+    - n_placebo: 18
+    - p_one_sided: 0.631578947368421
+    - placebo_median: 0.0016576342991602862
+    - placebo_min: -0.014920633160265718
+    - placebo_max: 0.009226266551496234
+    - gap_2017: False
+- `2026-10-13T11:39:40Z` **06_analysis** S6 community-only controls
+    - D_2017: -0.0014788204706028892
+    - rank_among_all: 8
+    - n_placebo: 20
+    - p_one_sided: 0.38095238095238093
+    - placebo_median: 0.0034592163708934377
+    - placebo_min: -0.06467968591056658
+    - placebo_max: 0.10049532025553391
+- `2026-10-13T11:39:40Z` **06_analysis** S7 one-step sum (method check)
+    - D_2017: 0.01863317850660871
+    - rank_among_all: 13
+    - n_placebo: 20
+    - p_one_sided: 0.6190476190476191
+    - placebo_median: 0.0040854187355600195
+    - placebo_min: -0.03385317070540186
+    - placebo_max: 0.04544129945271471
+- `2026-10-13T11:39:40Z` **06_analysis** S10 clean placebo years
+    - D_2017: 0.009741720655559389
+    - rank_among_all: 8
+    - n_placebo: 12
+    - p_one_sided: 0.6153846153846154
+    - placebo_median: 0.0006627818247213959
+    - placebo_min: -0.019341971235426435
+    - placebo_max: 0.026058983456372416
+    - placebo_years: [2003, 2004, 2005, 2007, 2010, 2011, 2013, 2018, 2019, 2020, 2024, 2025]
+    - S1_t: 0.3781217743154092
+    - S1_df: 10
+    - S1_p_one_sided: 0.6433785725897248
+- `2026-10-13T11:39:40Z` **06_analysis** S8 other invasion-coded seasons
+    - 2015: {'D': 0.006458167818791505, 'rank_vs_placebo': 13, 'gap': False}
+- `2026-10-13T11:39:40Z` **06_analysis** results saved
+    - file: runs/20261013_2150_fenceline/outputs/results.json
+    - sha256: ff334c9001c0f29dc6d32d124614e7459352cd4f6796c3be79acfd73ea70a365
+- `2026-10-13T11:39:40Z` **06_analysis** figure
+    - file: runs/20261013_2150_fenceline/outputs/fig_D_by_year.png
+    - sha256: 8850c9e57cbb83af9d00f4db9a9cdaf4db97f23617c477770ac59c5cd34ad2cc
+- `2026-10-13T11:40:45Z` **deviations** DEVIATIONS.md written after results: D1 (S4 orientation flaw), E1-E3 post-hoc exploratory
+    - sha256: 5e6d18e3ee53819a2a567d734efaaea83a1e7b0076bca6e3ddaddce50676a795
+- `2026-10-13T11:41:22Z` **07_exploratory** start
+    - script: revision/fenceline/s07_exploratory.py
+    - script_sha256: 5c951a540fbe016725257af718c1b40a580070335780e37a982ac996ff323434
+    - fl_common_sha256: 9da7e4fa5035fcbabfdf3879dd7d480b48e4e72c6aeb4ed3f5ae6d1721f14153
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T11:41:22Z` **07_exploratory** freeze verified
+    - changed_scripts_declared_in_deviations: []
+- `2026-10-13T11:41:29Z` **07_exploratory** E1 corrected S4 (theta on [0, 2pi))
+    - n_splits: 200
+    - draws: 204
+    - D_true: 0.009741720655559389
+    - fake_median: 0.0023162317102763765
+    - fake_p5: -0.027992103758099456
+    - fake_p95: 0.025843038088745163
+    - p_one_sided: 0.6019900497512438
+- `2026-10-13T11:41:29Z` **07_exploratory** E3 trend in D and arm decomposition
+    - mean_D_2003_12: -0.004087344401585363
+    - mean_D_2013_25: 0.011314880192636115
+    - welch_t: 3.1939774396947778
+    - welch_p_two_sided: 0.0061345739327186176
+    - slope_D_per_year: 0.0012657531970759787
+    - slope_p: 0.0013587448290204042
+    - slope_treated_R_per_year: -0.00042565503223366787
+    - slope_treated_p: 0.8572363360328885
+    - slope_control_R_per_year: -0.0016914081321798933
+    - slope_control_p: 0.47970728221543957
+    - note: excludes gap-flagged 2023; includes invasion-coded years
+- `2026-10-13T11:41:31Z` **07_exploratory** E2 composite event study
+    - n_composites: 30
+    - below_p5: ['2017-12-19']
+    - above_p95: ['2017-08-13', '2017-11-01']
+- `2026-10-13T11:41:31Z` **07_exploratory** saved
+    - file: runs/20261013_2150_fenceline/outputs/exploratory/exploratory.json
+    - sha256: f6c9def7eff9a0f6b91d285419efeee063cb30cd6dc52c9d779e6e7ead72d8ff
+- `2026-10-13T11:41:31Z` **07_exploratory** figure
+    - file: runs/20261013_2150_fenceline/outputs/exploratory/fig_exploratory.png
+    - sha256: c9dbf85fe8db062a89debdbfcd2044c5a29eb5a735d973ce060a9814ca4b9984
+- `2026-10-13T11:42:41Z` **08_close** read-only inputs re-hashed at close (compare with 00_init)
+    - runs/20260914_1708_pipeline_h100_fairfight/params.npy: 1b612ac35f3a2d2a26820e5ccb446d1e9208f44baa8669995bdcf7cec76a4e03
+    - data/B/built.npz: f66f0ef7acd2ed918f4165b1122220f49c5d4f245c3706b869aa6f1aaf9046cc
+    - model.py: 3b6953b73650c2094ade12e0192bf5091950f052f21297b527a63f131018a727
+    - run.py: e80cc6b858e038b67d7a8f5c3963dfa76118492e6323c1c23c1555f1521f0da5
+    - aoi.py: ce2c5b160b43f991927ac71cda24f497b1b5e2385a5b7df2a68f1d37514db563
+    - data/B/fire.npz: 04ebc37f43164362e684a39562c4cf65c65a0d0dfede2e87947026698912a76d
+    - data/B/dem.npz: f3fa84f98be374322d274bfb2a22de100992aa53db435ce84541cf5f611e7a9d
+- `2026-10-13T11:42:41Z` **08_close** run closed: MANIFEST.sha256 written (all files except LOG.md, log.jsonl and the evidence tree, which has its own manifest)
+    - manifest_sha256: b00974e7291af18e10b8bd2bdfdb56fbbe3f2e69136712ecc99c34e8f5bcadbb
+    - result_sha256: c1c9d46e109e190b6983a950a5eee7e768b79357ea0f455ab6034fbd4c061d04
+    - files: 37
