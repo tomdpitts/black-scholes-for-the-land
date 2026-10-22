@@ -61,5 +61,6 @@ M4: 1,002 parameters per fit. Full-box 2022 attribution (rain + demand shares) p
 laptop CPU: 16 ms after compilation (0.2 s first call). One fit: ~80 min CPU, ~2.5 min H100.
 
 ## Not done / next
-Identification test and Delta-ranking test rerun with M4 (M2 versions only so far). Foundation-model
-(Chronos-2) attribution comparison: revision/FM_HANDOFF.md. Multi-step training: dropped for the workshop.
+Superseded 2026-10-22 by the paper's test suite, revision/TESTS.md: four tests (skill, attribution, 2022 drought,
+sensitivities) run on z-score, RESTREND, M1-M4, the M4 ensemble and Chronos-2 (revision/FM_HANDOFF.md).
+Multi-step training: dropped for the workshop.

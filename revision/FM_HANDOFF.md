@@ -30,7 +30,12 @@ weather attributions and a residual, and to get sensitivities (Greeks) by differ
   Box B 2019-25 columns).
 - Compute: M4 full-box (25,600 pixels) 2022 attribution + rain Greek map on laptop CPU = 16 ms after JIT.
 
-## The experiment (agreed with the user)
+## The experiment (agreed with the user; updated 2026-10-22)
+Chronos-2 is a **competitor in every test of the suite** (revision/TESTS.md), not a separate engine swap. The suite
+runs one cast of models (z-score, RESTREND, M1, M2, M3, M4, M4 ensemble) through four tests: skill, attribution,
+2022 drought, sensitivities. Chronos-2 adds a column to each test. Read TESTS.md first; this file holds the
+Chronos-2 specifics.
+
 Model: **Chronos-2 only** (amazon/chronos-2, ~120M params, open weights, zero-shot, past and known-future
 covariates). Verify the current package and API before building. Two modes:
 1. **With weather**: past and known-future rain and ET0 anomalies as covariates (attribution given the weather
@@ -39,22 +44,37 @@ covariates). Verify the current package and API before building. Two modes:
 TimesFM is a possible later second model, decided after Chronos-2 results. Inference only, no fine-tuning.
 
 Steps:
-1. **Pre-register first** (runs/<YYYYMMDD_HHMM>_fm/PREREG.md, then `shasum -a 256` into PREREG.sha256 with a UTC
-   timestamp) before any Chronos-2 output exists. Any later change is a dated addendum written before the run it
-   affects, appended and re-hashed. Follow runs/20261021_0147_m3/PREREG.md as the template.
-2. **Skill**: rolling 1-step and 6-step (3-month) forecasts, CRPS skill vs M0 using the same code and starts as
-   `m3.score`, on A_test and B_test, on a fixed random sample of 4,000 pixels per box (seed 0). Re-score M4 on
-   the same pixels. Add Chronos-2 rows (with / without weather) to the one-step chart.
-3. **2022 attribution with Chronos-2 as engine** (full Box A):
+1. **Pre-register first**: one PREREG for the whole suite, Chronos-2 included (runs/<YYYYMMDD_HHMM>_suite/PREREG.md,
+   then `shasum -a 256` into PREREG.sha256 with a UTC timestamp), before any result exists. Any later change is a
+   dated addendum written before the run it affects, appended and re-hashed. Follow runs/20261021_0147_m3/PREREG.md
+   as the template.
+2. **Test 1, skill**: rolling 1-step and 6-step (3-month) forecasts, CRPS skill vs M0 using the same code and starts
+   as `m3.score`, on A_test and B_test, on a fixed random sample of 4,000 pixels per box (seed 0). Re-score M4 and the
+   M4 ensemble on the same pixels. Add Chronos-2 rows (with / without weather) to the skill chart.
+3. **Test 2, attribution: the Chronos-2 world.** Build a fake world from Chronos-2 with weather: for each of the 13
+   held-out Box A seasons, invert the real season to percentiles (below), then generate the season step by step from
+   the observed start, taking those percentiles of each new predictive distribution, with the injected management
+   added to each step's value before it is fed back as history. The truth is the same under normal weather (rain at
+   climatology, ET0 anomaly zero). Score every estimator of TESTS.md (z-score, RESTREND, M1-M4, ensemble, and
+   Chronos-2 itself, the own-world cell) with the TESTS.md metrics, including the difficulty check. A pixel sample
+   and the drought seasons may be enough: the PREREG fixes the rule, and a dated addendum fixes the number after the
+   CPU cost test.
+   Chronos-2 is not scored in the M4 world.
+4. **Test 3, 2022 attribution with Chronos-2 as engine** (full Box A):
    - Invert: at each 16-day step take the observation's percentile in Chronos-2's one-step predictive
      distribution (probability integral transform; interpolate the quantiles).
    - Counterfactuals: re-run the season one step at a time under normal rain, normal ET0, and both, taking the
      same percentile of each new predictive distribution and feeding results back as history.
    - Shapley split exactly as m3_attribution.py; box totals and maps.
-4. **Greeks**: rain Delta by finite differences (+100 mm in window 1, response 2 steps ahead); autodiff if practical.
-5. **Diagnostics for both engines (reported, not deciding)**: exact reconstruction when percentiles are
-   re-injected; Delta-ranking test; residual trend against rain and ET0 departure, binned.
-6. **Compute**: time the same full-box 2022 attribution on the laptop CPU for Chronos-2 vs M4 (16 ms).
+5. **Test 4, sensitivities**: rain Delta (+100 mm in window 1, response 2 steps ahead), into the TESTS.md ranking
+   test, reported but not deciding. Try autodiff first by calling the network directly (the standard prediction
+   call probably disables gradients). Delta is then the derivative of the median forecast. Fall back to finite
+   differences, and say which was used.
+6. **Diagnostics (reported, not deciding)**: exact reconstruction when percentiles are re-injected; residual trend
+   against rain and ET0 departure, binned.
+7. **Compute**: every row of the TESTS.md compute table for Chronos-2 and M4 on the same laptop CPU: test 1 scoring,
+   test 2 world simulation + attribution, the full-box 2022 attribution (M4: 16 ms warm), and the full-box Delta map.
+   Add GPU time and $ for the Modal runs.
 
 ## Pre-registered test and referee
 - **Agreement**: Chronos-2's 2022 total weather attribution (rain + ET0) lies within M4's seed range
@@ -72,10 +92,16 @@ Steps:
     attribute (consistent with fev-bench's covariate finding).
   F Chronos-2 without weather >= M4 at 3 months: weather adds little over a strong history model (serious; unlikely).
 
+- **Test 2 own-world cell** (reported alongside the referee): does Chronos-2's percentile-based attribution
+  recover the injected management in its own world? Compare its error with M4's own-world error, with the
+  difficulty check beside it.
+
 ## How to work
-- Local CPU first: build and test on a small pixel subset with .venv/bin/python (JAX on CPU). Use the CPU test to
-  estimate full-run cost. **The user is cost-sensitive: ask before any Modal spend** (expected ~$3-6 for one
-  Chronos-2 run). Modal pattern: revision/m3_modal.py, volume `projectb-data`.
+- Local CPU first: run every non-Chronos cell of the suite on the laptop, then a small Chronos-2 CPU test on a pixel
+  subset, 2003-17 only (TESTS.md run protocol), to estimate the full GPU cost of tests 1-4. Show the user the full tables and figures and the cost
+  estimate, then **stop: the user decides Go/No-go on Modal**. The user is cost-sensitive: ask before any Modal
+  spend (expected ~$3-6 per Chronos-2 run; the test 2 world adds to that). Modal pattern: revision/m3_modal.py,
+  volume `projectb-data`.
 - Do not modify model.py (hashed by earlier runs). New scripts go in revision/, outputs in the new run dir,
   figures in paper/figs/ (candidates in paper/figs/candidates/). Do not commit unless asked.
 - Elegance over breadth: few clean scripts, no ad-hoc clutter; match the style of revision/m3.py.
