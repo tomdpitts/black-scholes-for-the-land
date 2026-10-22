@@ -29,8 +29,9 @@ def log(msg):
 
 
 def evalsets(A, B):
-    tgt = A["year"][1:]
-    return {"A_test": (A, np.isin(tgt, list(aoi.TEST_YEARS))), "B_all": (B, np.ones(B["a"].shape[0] - 1, bool))}
+    tgt, tB = A["year"][1:], B["year"][1:]
+    return {"A_test": (A, np.isin(tgt, list(aoi.TEST_YEARS))), "B_all": (B, np.ones(B["a"].shape[0] - 1, bool)),
+            "B_test": (B, np.isin(tB, list(aoi.TEST_YEARS)))}
 
 
 def starts_of(D, mt):
@@ -87,9 +88,9 @@ def gbm_features(a_lags, n, D, t_next, x):
     return np.stack([c.reshape(-1) for c in cols], 1).astype(np.float32)
 
 
-def gbm():
+def fit_gbm(A):
+    """Fit B1 on Box A (train 2003-17, variance rescaled on 2018). Returns predict(X) -> (mean, sd), fit info."""
     from sklearn.ensemble import HistGradientBoostingRegressor
-    A, B = load("A"), load("B")
     rng = np.random.default_rng(0)
     nA = nbhd(A["a"])
     tgt = A["year"][1:]
@@ -125,8 +126,19 @@ def gbm():
     def predict(X):
         return mean.predict(X), np.sqrt(np.exp(var.predict(X)) * c)
 
+    return predict, {"train_rows": int(len(Ytr)), "mean_iters": int(mean.n_iter_), "var_iters": int(var.n_iter_),
+                     "var_scale": c}
+
+
+def gbm(sets=("A_test", "B_all"), out=None):
+    """Default: the pre-registered sets, summarised against the fair-fight M0. With `out`, the given
+    sets' raw CRPS go to <out>/metrics_gbm_<sets>.json (skill is computed against that run's M0)."""
+    A, B = load("A"), load("B")
+    N = A["a"].shape[1]
+    predict, fit_info = fit_gbm(A)
     res = {}
-    for es, (D, mt) in evalsets(A, B).items():
+    for es in sets:
+        D, mt = evalsets(A, B)[es]
         nD = nbhd(D["a"])
         num = den = 0.0
         for t in np.where(mt)[0]:
@@ -160,9 +172,14 @@ def gbm():
             if k % 10 == 0:
                 log(f"  {es} rollout {k}/{len(st)} {time.time() - t0:.0f}s")
         res[es] = {"onestep_crps": one, "rollout_crps": (rnum / rden).tolist()}
-    out = summarise(res, "GBM")
-    out["fit"] = {"train_rows": int(len(Ytr)), "mean_iters": int(mean.n_iter_), "var_iters": int(var.n_iter_), "var_scale": c}
-    json.dump(out, open(f"{OUT}/metrics_gbm.json", "w"), indent=1)
+    if out:
+        path = f"{out}/metrics_gbm_{'_'.join(sets)}.json"
+        json.dump({**res, "fit": fit_info}, open(path, "w"), indent=1)
+        log(f"wrote {path}")
+        return
+    summary = summarise(res, "GBM")
+    summary["fit"] = fit_info
+    json.dump(summary, open(f"{OUT}/metrics_gbm.json", "w"), indent=1)
     log(f"wrote {OUT}/metrics_gbm.json")
 
 
@@ -274,7 +291,7 @@ def gru():
     np.save(f"{OUT}/params_{tag}.npy", {k: np.asarray(v) for k, v in p.items()}, allow_pickle=True)
 
     res = {}
-    for es, (D, mt) in evalsets(A, B).items():
+    for es, (D, mt) in ((k, evalsets(A, B)[k]) for k in ("A_test", "B_all")):
         FD = flat(D)
         mu, sig, hs = jax.jit(seq)(p, FD["a"], FD["n"], FD["r"], FD["rc0"], FD["ph"], FD["x"])
         m = np.asarray((FD["obs"][1:] & FD["obs"][:-1])) & mt[:, None]
@@ -322,4 +339,7 @@ def gru():
 
 
 if __name__ == "__main__":
-    {"gbm": gbm, "gru": gru}[sys.argv[1]]()
+    if sys.argv[1] == "gbm" and len(sys.argv) > 2:  # baselines.py gbm <out dir> <set> ...
+        gbm(tuple(sys.argv[3:]), sys.argv[2])
+    else:
+        {"gbm": gbm, "gru": gru}[sys.argv[1]]()

@@ -2,6 +2,10 @@
 
 Numbers: M0-M2 from paper/agriai/supplement.tex tab:onestep (runs/20260914_1708_pipeline_h100_fairfight);
 GBM and GRU-M2 from runs/20261006_1759_baselines (revision/REVISION.md section 2).
+M2 (refit), M3 (+ topography), M4 (+ evaporative demand): 5-seed means of single fits, and the M4
+5-seed ensemble (its 1-step rollout skill), runs/20261021_0147_m3/gpu.
+Box B column is 2019-25 only (unseen landscape and unseen years): M1, M1.5, M2 rain removed re-scored from the
+fair-fight fits (runs/20261021_0147_m3/onestep_B_test_paper_models.json); trees from metrics_gbm_B_test.json.
 Run from the repo root: .venv/bin/python revision/fig_onestep_skill.py
 """
 import glob
@@ -18,20 +22,23 @@ for _f in glob.glob(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..
 plt.rcParams.update({"font.family": "Open Sans", "pdf.fonttype": 42, "font.size": 8, "axes.spines.top": False, "axes.spines.right": False,
                      "figure.dpi": 150, "savefig.bbox": "tight"})
 
-# (label, Box A 2019-25, Box B all years), CRPS skill vs M0; table order, top to bottom
+# (label, Box A 2019-25, Box B 2019-25), CRPS skill vs M0; table order, top to bottom
 ROWS = [
     ("M0, history only", 0.000, 0.000),
-    ("M1, linear rain", 0.013, 0.052),
-    ("M1.5, S-curve rain", 0.009, 0.052),
-    ("Gradient-boosted trees", 0.046, 0.090),
-    ("M2, rain removed", 0.016, 0.023),
-    ("M2, learned (ours)", 0.085, 0.104),
+    ("M1, linear rain", 0.013, 0.040),
+    ("M1.5, S-curve rain", 0.009, 0.042),
+    ("Gradient-boosted trees", 0.046, 0.003),
+    ("M2, rain removed", 0.016, 0.012),
+    ("M2, learned", 0.092, 0.075),
+    ("M3 (inc. topography)", 0.099, 0.083),
+    ("M4 (inc. evaporative demand)", 0.103, 0.112),
+    ("M4 5-seed ensemble (ours)", 0.111, 0.131),
 ]
-SERIES = [("Unseen years (Box A, 2019–25)", "#2a78d6"), ("Unseen landscape (Box B)", "#eb6834")]
+SERIES = [("Unseen years (Box A, 2019–25)", "#2a78d6"), ("Unseen landscape and years (Box B, 2019–25)", "#eb6834")]
 INK, INK2, GRID, SURF = "#0b0b0b", "#52514e", "#e8e7e2", "#fcfcfb"
 
 
-def chart(out, figsize=(6.4, 3.4), fs=8):
+def chart(out, figsize=(6.4, 4.6), fs=8):
     fig, ax = plt.subplots(figsize=figsize, constrained_layout=True)
     fig.patch.set_facecolor(SURF); ax.set_facecolor(SURF)
     y = np.arange(len(ROWS))[::-1].astype(float)
@@ -47,8 +54,8 @@ def chart(out, figsize=(6.4, 3.4), fs=8):
     ax.get_yticklabels()[-1].set_fontweight("bold")
     ax.tick_params(axis="y", length=0)
     ax.axvline(0, color=INK2, lw=1.0, zorder=3)
-    ax.set_xlim(0, 12)
-    ax.set_xticks(range(0, 13, 2)); ax.set_xticklabels([f"{v}%" for v in range(0, 13, 2)], fontsize=fs, color=INK2)
+    ax.set_xlim(0, 16)
+    ax.set_xticks(range(0, 17, 2)); ax.set_xticklabels([f"{v}%" for v in range(0, 17, 2)], fontsize=fs, color=INK2)
     ax.grid(axis="x", color=GRID, lw=0.6); ax.set_axisbelow(True)
     ax.spines["left"].set_visible(False); ax.spines["bottom"].set_color("#c3c2b7")
     ax.set_xlabel("Less one-step error (CRPS) than history alone", fontsize=fs, color=INK2)

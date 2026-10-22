@@ -26,3 +26,8 @@ paper/agriai/*.pdf
 # Kept local: OpenReview reviews (repo is public) and WDPA data (no redistribution)
 revision/openreview_*.json
 wdpa.json
+
+# latexmk and editor files
+*.fls
+*.fdb_latexmk
+.vscode/
