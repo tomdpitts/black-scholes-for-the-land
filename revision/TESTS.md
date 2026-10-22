@@ -159,7 +159,7 @@ Headline number per column:
 | Column | Number in each cell |
 |---|---|
 | 1 Skill | 3-month CRPS skill vs M0, A_test / B_test |
-| 2 Attribution | S1 error in the management estimate as a share of the true effect, signed, drought / other seasons |
+| 2 Attribution | S1 error in the management estimate as a share of the true effect: mean size (signed mean), drought / other seasons |
 | 3 2022 drought | total weather share (rain + demand), NDVI |
 | 4 Sensitivities | G1 high-minus-low tercile slope, gap-free starts, Box A / B, with 95% CI and pass (G2 for RESTREND) |
 | Compute | laptop CPU warm time for the full-box 2022 attribution, and the parameter count |
