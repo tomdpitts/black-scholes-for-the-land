@@ -5,7 +5,7 @@
     surprise. Six near-independent per-step residuals average to a spread ~1/sqrt(6), so the sum / sqrt(6)
     puts (b) on the same footing as (a): -1 means an unusual season in both panels.
 
-  .venv/bin/python fig_maps.py  -> paper/figs/candidates/fig_maps_2022.pdf/.png
+  .venv/bin/python fig_maps.py  -> paper/figs/candidates/fig_maps_2022.png
 """
 import matplotlib
 matplotlib.use("Agg")
@@ -48,9 +48,8 @@ def main():
     cb.ax.tick_params(labelsize=7)
     fig.suptitle("Box A, Mar–May 2022 (long-rains season, rain 124 mm below normal). "
                  "(a) six-composite mean; (b) six-step sum ÷ √6", fontsize=8, x=0.01, ha="left")
-    fig.savefig("paper/figs/candidates/fig_maps_2022.pdf")
     fig.savefig("paper/figs/candidates/fig_maps_2022.png", dpi=200)
-    print("wrote paper/figs/candidates/fig_maps_2022.pdf/.png")
+    print("wrote paper/figs/candidates/fig_maps_2022.png")
 
 
 if __name__ == "__main__":

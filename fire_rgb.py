@@ -80,7 +80,6 @@ def main():
         ax.set_xlim(W, E); ax.set_ylim(S, N); ax.set_axis_off()
         fig.subplots_adjust(0, 0, 1, 1)
         fig.savefig(f"paper/figs/{name}.png", dpi=400)
-        fig.savefig(f"paper/figs/{name}.pdf")
         plt.close(fig)
     print("wrote paper/figs/fig_fire_rgb.png and fig_fire_rgb_outline.png, scene", date)
 

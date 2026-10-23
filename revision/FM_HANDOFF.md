@@ -3,7 +3,7 @@
 You are taking over one experiment in /Users/tompitts/dphil/ProjectB. Read this whole file before acting.
 
 ## The paper and what matters
-AgriAI workshop paper (AAAI-27, deadline 20 Nov 2026, source paper/agriai/main.tex). Claim: invert a learned
+AgriAI workshop paper (AAAI-27, deadline 20 Nov 2026, source paper/main.tex + paper/supplement.tex, build paper/build.sh). Claim: invert a learned
 model of satellite greenness (NDVI anomaly) conditioned on weather to split a season's greenness change into
 weather attributions and a residual, and to get sensitivities (Greeks) by differentiation. The contribution is the
 **reverse attribution and sensitivities**, not the neural net. Use the word "attributions" for the split.

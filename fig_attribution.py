@@ -7,7 +7,7 @@ spatial correlation, so the band is honest at box scale). Bar: the season-end an
 starting deficit, the rain's share (observed minus the normal-rain counterfactual, Eq. cf) and the
 residual (observed minus expected).
 
-  .venv/bin/python fig_attribution.py [run dir]  -> paper/figs/fig_attribution.pdf/.png
+  .venv/bin/python fig_attribution.py [run dir]  -> paper/figs/fig_attribution.png
 """
 import sys
 
@@ -110,9 +110,8 @@ def main():
                 color=INK, linespacing=1.15)
     bx.set_xlim(-0.4, 1.9); bx.set_xticks([]); bx.tick_params(left=False, labelleft=False)
     bx.spines["left"].set_visible(False); bx.spines["bottom"].set_visible(False)
-    fig.savefig("paper/figs/fig_attribution.pdf", bbox_inches="tight")
     fig.savefig("paper/figs/fig_attribution.png", dpi=220, bbox_inches="tight")
-    print("wrote paper/figs/fig_attribution.pdf/.png")
+    print("wrote paper/figs/fig_attribution.png")
 
 
 if __name__ == "__main__":

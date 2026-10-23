@@ -6,7 +6,7 @@ Plug in:  roll the same model along another rain path r' with eps_t held fixed
           (Pearl's abduction / action / prediction). r' = climatology gives "what the land
           would have done in a normal season, with everything that was not rain unchanged".
 
-  .venv/bin/python residual.py [run dir]  -> runs/<ts>_residual/{metrics.json,fig data}, paper/figs/fig_residual.pdf
+  .venv/bin/python residual.py [run dir]  -> runs/<ts>_residual/{metrics.json,fig data}, paper/figs/fig_residual.png
 """
 import json
 import sys
@@ -120,7 +120,7 @@ def main():
     ax[0].set_ylabel("NDVI anomaly, box mean")
     ax[0].legend(fontsize=5.5, frameon=False, loc="lower left", handlelength=1.6)
     fig.tight_layout(w_pad=2.5)
-    fig.savefig("paper/figs/fig_residual.pdf"); fig.savefig("paper/figs/fig_residual.png", dpi=200)
+    fig.savefig("paper/figs/fig_residual.png", dpi=200)
 
     # ------------------------------------------------------------------ figure 2: fire. burn on 2021-01-17, scored one composite on
     tb = int(np.where(A["dates"].astype("datetime64[D]") == np.datetime64("2021-01-17"))[0][0])
@@ -158,9 +158,9 @@ def main():
         ax[k].set_xticks([]); ax[k].set_yticks([]); ax[k].set_title(title.replace("\\ ", " "), fontsize=7)
         for sp in ax[k].spines.values(): sp.set_visible(False)
     cb = fig.colorbar(im, cax=ax.cbar_axes[0]); cb.set_label("standard deviations", fontsize=7); cb.ax.tick_params(labelsize=6)
-    fig.savefig("paper/figs/fig_fire.pdf", bbox_inches="tight"); fig.savefig("paper/figs/fig_fire.png", dpi=200, bbox_inches="tight")
+    fig.savefig("paper/figs/fig_fire.png", dpi=200, bbox_inches="tight")
     json.dump({"run": RUN, "rows": rows, "fire": fire}, open(f"{out}/metrics.json", "w"), indent=1)
-    print("wrote", out, "fig_residual.pdf, fig_fire.pdf")
+    print("wrote", out, "fig_residual.png, fig_fire.png")
 
 
 if __name__ == "__main__":

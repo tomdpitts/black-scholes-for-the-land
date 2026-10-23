@@ -45,42 +45,45 @@ def implied(p, s, a0, w0, y, r, ex, ph):
     return jax.lax.scan(body, (a0, w0), jnp.arange(H))[1]
 
 
+def season_split(p, D, w, t0):
+    """Split one season (state at t0, windows t0+1..t0+H) as in the module docstring. Box means, season end."""
+    s = D["s"]
+    roll = lambda *z: rerun(p, s, *z)
+    sl = slice(t0 + 1, t0 + 1 + H)
+    a0, w0, y = D["a"][t0], w[t0], D["a"][sl]
+    r, rc, ex, ph = D["r"][sl], D["rclim"][sl], D["ex"][sl], D["phase"][sl]
+    ex0 = jnp.zeros_like(ex)
+    eps, g_mu = implied(p, s, a0, w0, y, r, ex, ph)
+    zero = jnp.zeros_like(eps)
+    bm = lambda z: float(z[-1].mean())  # season-end box mean
+    obs, F = bm(y), bm(roll(a0, w0, r, ex, ph, zero))
+    cf_r = bm(roll(a0, w0, rc, ex, ph, eps))
+    assert abs(bm(roll(a0, w0, r, ex, ph, eps)) - obs) < 1e-4  # re-injection reproduces the observation
+    row = {"rain_departure_mm": float((r - rc).mean((1, 2)).sum() * 100), "obs": obs, "residual": obs - F}
+    if ex.shape[-1]:
+        cf_t, cf_rt = bm(roll(a0, w0, r, ex0, ph, eps)), bm(roll(a0, w0, rc, ex0, ph, eps))
+        row["rain"] = 0.5 * ((obs - cf_r) + (cf_t - cf_rt))
+        row["temp"] = 0.5 * ((obs - cf_t) + (cf_r - cf_rt))
+        row["temp_anomaly_C"] = float(ex.mean())
+        e1 = jnp.zeros_like(ex).at[0].set(1.0)
+        _, dT = jax.jvp(lambda e: roll(a0, w0, r, e, ph, zero), (ex,), (e1,))
+        row["delta_T_season_end_per_C"] = float(dT[-1].mean())
+        row["g_mu_mean_per_C"] = float(g_mu.mean())
+    else:
+        row["rain"], row["temp"] = obs - cf_r, 0.0
+    row["start_deficit"] = obs - row["residual"] - row["rain"] - row["temp"]
+    return row
+
+
 def attribution(R, config, seed):
     topo, temp = m3.CONFIGS[config][:2]
     d = m3.load_box("A", topo, temp)
     D = m3.jaxify(d)
     p = {k: jnp.asarray(v) for k, v in np.load(f"{R}/params_{config}_s{seed}.npy", allow_pickle=True).item().items()}
     w = m3.w_path(p, D)
-    s = D["s"]
-    roll = lambda *z: rerun(p, s, *z)
-    invert = lambda *z: implied(p, s, *z)
-
     out = []
     for (y_, sn, t0) in season_starts(d, range(2019, 2026)):
-        sl = slice(t0 + 1, t0 + 1 + H)
-        a0, w0, y = D["a"][t0], w[t0], D["a"][sl]
-        r, rc, ex, ph = D["r"][sl], D["rclim"][sl], D["ex"][sl], D["phase"][sl]
-        ex0 = jnp.zeros_like(ex)
-        eps, g_mu = invert(a0, w0, y, r, ex, ph)
-        zero = jnp.zeros_like(eps)
-        bm = lambda z: float(z[-1].mean())  # season-end box mean
-        obs, F = bm(y), bm(roll(a0, w0, r, ex, ph, zero))
-        cf_r = bm(roll(a0, w0, rc, ex, ph, eps))
-        assert abs(bm(roll(a0, w0, r, ex, ph, eps)) - obs) < 1e-4  # re-injection reproduces the observation
-        row = {"season": f"{sn}{y_}", "rain_departure_mm": float((r - rc).mean((1, 2)).sum() * 100), "obs": obs,
-               "residual": obs - F}
-        if ex.shape[-1]:
-            cf_t, cf_rt = bm(roll(a0, w0, r, ex0, ph, eps)), bm(roll(a0, w0, rc, ex0, ph, eps))
-            row["rain"] = 0.5 * ((obs - cf_r) + (cf_t - cf_rt))
-            row["temp"] = 0.5 * ((obs - cf_t) + (cf_r - cf_rt))
-            row["temp_anomaly_C"] = float(ex.mean())
-            e1 = jnp.zeros_like(ex).at[0].set(1.0)
-            _, dT = jax.jvp(lambda e: roll(a0, w0, r, e, ph, zero), (ex,), (e1,))
-            row["delta_T_season_end_per_C"] = float(dT[-1].mean())
-            row["g_mu_mean_per_C"] = float(g_mu.mean())
-        else:
-            row["rain"], row["temp"] = obs - cf_r, 0.0
-        row["start_deficit"] = obs - row["residual"] - row["rain"] - row["temp"]
+        row = {"season": f"{sn}{y_}", **season_split(p, D, w, t0)}
         out.append(row)
         print(json.dumps({k: (round(v, 3) if isinstance(v, float) else v) for k, v in row.items()}), flush=True)
     json.dump(out, open(f"{R}/attribution_{config}_s{seed}.json", "w"), indent=1)

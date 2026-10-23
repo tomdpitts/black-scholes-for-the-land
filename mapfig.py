@@ -1,6 +1,6 @@
 """Location figure: Kenya inset with the two boxes, and Sentinel-2 true colour of each box.
 
-  python mapfig.py  -> paper/figs/fig_map.pdf / .png
+  python mapfig.py  -> paper/figs/fig_map.png
 """
 import json
 import urllib.request
@@ -99,7 +99,6 @@ def main():
         ax.set_yticklabels([f"{y:.2f}°N" for y in (s, (s + n) / 2, n)], fontsize=6)
         ax.set_title(name, fontsize=7.5, loc="left", color=c)
         print(b, "scenes:", dates)
-    fig.savefig("paper/figs/fig_map.pdf", bbox_inches="tight")
     fig.savefig("paper/figs/fig_map.png", bbox_inches="tight", dpi=200)
     print("map written")
 

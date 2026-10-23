@@ -12,7 +12,7 @@ Figure 2 (fig_greeks_scenario):
   100 mm less rain than normal, spread over its six windows in proportion to normal rain: a directional
   Delta (Jacobian-vector product), on 2 km blocks, and the land split into exposure thirds.
 
-  .venv/bin/python fig_greeks_value.py  -> paper/figs/candidates/fig_greeks_{rank_state,scenario}.pdf/.png
+  .venv/bin/python fig_greeks_value.py  -> paper/figs/candidates/fig_greeks_{rank_state,scenario}.png
 """
 import glob
 import os
@@ -146,7 +146,6 @@ def main():
     cb = fig.colorbar(im, cax=cax, orientation="horizontal", ticks=[0, 0.05, 0.1])
     cb.ax.tick_params(labelsize=6.5, length=2); cb.outline.set_linewidth(0.4)
     cb.set_label("Box A, Δ: NDVI gain per extra 100 mm, a month on", fontsize=7, color=INK)
-    fig.savefig("paper/figs/candidates/fig_greeks_rank_state.pdf", bbox_inches="tight", facecolor=SURF)
     fig.savefig("paper/figs/candidates/fig_greeks_rank_state.png", dpi=220, bbox_inches="tight", facecolor=SURF)
     plt.close(fig)
 
@@ -218,9 +217,8 @@ def main():
                    fontweight="bold", color=INK)
     bb = ttl.get_window_extent(fig.canvas.get_renderer()).transformed(fig.transFigure.inverted())
     fig.text(bb.x1 + 0.01, 1.03, f"(normal = {normal_mm:.0f}mm)", ha="left", va="bottom", fontsize=9, color=MUTED)
-    fig.savefig("paper/figs/candidates/fig_greeks_scenario.pdf", bbox_inches="tight", facecolor=SURF)
     fig.savefig("paper/figs/candidates/fig_greeks_scenario.png", dpi=220, bbox_inches="tight", facecolor=SURF)
-    print("wrote paper/figs/candidates/fig_greeks_{rank_state,scenario}.pdf/.png")
+    print("wrote paper/figs/candidates/fig_greeks_{rank_state,scenario}.png")
 
 
 if __name__ == "__main__":

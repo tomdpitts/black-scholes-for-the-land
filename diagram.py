@@ -1,6 +1,6 @@
 """Schematic: the land model as an option-pricing model, with the one missing input.
 
-  python diagram.py   -> paper/figs/fig0_diagram.pdf and .png
+  python diagram.py   -> paper/figs/fig0_diagram.png, fig0_diagram_paper.png, fig1_strip.png
 """
 import matplotlib
 matplotlib.use("Agg")
@@ -163,8 +163,7 @@ def draw_strip(out, f=1.0):
 
 
 if __name__ == "__main__":
-    draw_strip("paper/figs/fig1_strip.pdf")
     draw_strip("paper/figs/fig1_strip.png")
-    draw_paper("paper/figs/fig0_diagram.pdf")
+    draw_paper("paper/figs/fig0_diagram_paper.png")
     draw("paper/figs/fig0_diagram.png")
     print("diagram written")

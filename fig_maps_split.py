@@ -8,7 +8,7 @@ Averaged to 8x8-pixel blocks (~2.2 km): attribution is a project-scale product (
 Blocks whose residual sits inside their own range over the 2003-17 long-rains seasons are faded:
 that much happens in an ordinary year.
 
-  .venv/bin/python fig_maps_split.py [run dir]  -> paper/figs/candidates/fig_maps_split_2022.pdf/.png
+  .venv/bin/python fig_maps_split.py [run dir]  -> paper/figs/candidates/fig_maps_split_2022.png
 """
 import glob
 import os
@@ -129,9 +129,8 @@ def main():
     cax.text(-0.02, 0.5, "browner", transform=cax.transAxes, ha="right", va="center", fontsize=7, color=INK)
     cax.text(1.02, 0.5, "greener", transform=cax.transAxes, ha="left", va="center", fontsize=7, color=INK)
     cb.outline.set_linewidth(0.4)
-    fig.savefig("paper/figs/candidates/fig_maps_split_2022.pdf", bbox_inches="tight", facecolor=SURF)
     fig.savefig("paper/figs/candidates/fig_maps_split_2022.png", dpi=220, bbox_inches="tight", facecolor=SURF)
-    print("wrote paper/figs/candidates/fig_maps_split_2022.pdf/.png")
+    print("wrote paper/figs/candidates/fig_maps_split_2022.png")
 
 
 if __name__ == "__main__":

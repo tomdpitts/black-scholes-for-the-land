@@ -8,7 +8,8 @@ Per pixel at season end, NDVI units, averaged over the fits:
 Averaged to 8x8-pixel blocks (~2.2 km), as fig_maps_split.py. Residual blocks inside their own 5-95% range
 over the 2003-17 long-rains seasons are faded. Elevation (Copernicus DEM GLO-30) is an input, not a share.
 
-  .venv/bin/python revision/fig_maps_split_m4.py   -> paper/figs/candidates/fig_maps_split_2022_m4.pdf/.png
+  .venv/bin/python revision/fig_maps_split_m4.py [chronos2]   -> paper/figs/candidates/fig_maps_split_2022_m4.png, or
+  with chronos2 paper/figs/chronos2/fig_maps_split_2022_m4e.png: as fig_maps_split_c2.py (no fading), for side by side
 """
 import os
 import sys
@@ -76,6 +77,15 @@ def main():
     print(f"corr with elevation (2 km blocks): rain {corr(maps[2]):+.2f}  demand {corr(maps[3]):+.2f}  "
           f"residual {corr(maps[4]):+.2f};  unusual residual blocks {unusual.mean():.0%}")
 
+    if "chronos2" in sys.argv:
+        draw(maps, None, elev, means, rain_mm, pet_mm, "M4 5-seed ensemble", "paper/figs/chronos2/fig_maps_split_2022_m4e")
+    else:
+        draw(maps, unusual, elev, means, rain_mm, pet_mm, "M4, mean of 5 fits", OUT)
+
+
+def draw(maps, unusual, elev, means, rain_mm, pet_mm, who, out):
+    """Terrain | observed = baseline + rain + demand + residual, 2 km blocks. unusual: residual blocks left unfaded
+    (None: no fading)."""
     fig = plt.figure(figsize=(8.6, 2.6))
     gs = fig.add_gridspec(2, 11, width_ratios=[1, .3, 1, .16, 1, .16, 1, .16, 1, .16, 1], height_ratios=[1, .06],
                           wspace=0.02, hspace=0.32)  # terrain | gap | observed = baseline + rain + demand + residual
@@ -106,7 +116,7 @@ def main():
     for i, (m, t, sub, mean) in enumerate(zip(maps, titles, subs, means)):
         ax = fig.add_subplot(gs[0, 2 + 2 * i])
         im = ax.imshow(m, **kw)
-        if i == 4:
+        if i == 4 and unusual is not None:
             veil = np.zeros((n, n, 4)); veil[..., :3] = 1; veil[..., 3] = np.where(unusual, 0, 0.72)
             ax.imshow(veil, interpolation="nearest", extent=ext)
         frame(ax, t, sub, f"box mean {mean:+.2f}".replace("-", "−"))
@@ -116,13 +126,12 @@ def main():
     cax = fig.add_subplot(gs[1, 3:10])
     cb = fig.colorbar(im, cax=cax, orientation="horizontal", ticks=[-0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3])
     cb.ax.tick_params(labelsize=6.5, length=2)
-    cb.set_label("NDVI anomaly at season end, 2 km blocks; M4, mean of 5 fits", fontsize=7, color=INK)
+    cb.set_label(f"NDVI anomaly at season end, 2 km blocks; {who}", fontsize=7, color=INK)
     cax.text(-0.02, 0.5, "browner", transform=cax.transAxes, ha="right", va="center", fontsize=7, color=INK)
     cax.text(1.02, 0.5, "greener", transform=cax.transAxes, ha="left", va="center", fontsize=7, color=INK)
     cb.outline.set_linewidth(0.4)
-    fig.savefig(f"{OUT}.pdf", bbox_inches="tight", facecolor=SURF)
-    fig.savefig(f"{OUT}.png", dpi=220, bbox_inches="tight", facecolor=SURF)
-    print(f"wrote {OUT}.pdf/.png")
+    fig.savefig(f"{out}.png", dpi=220, bbox_inches="tight", facecolor=SURF)
+    print(f"wrote {out}.png")
 
 
 if __name__ == "__main__":

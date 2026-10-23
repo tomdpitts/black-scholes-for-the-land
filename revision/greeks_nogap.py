@@ -21,5 +21,6 @@ def starts_nogap(d, years):
     return [t for t in _orig(d, years) if not gap[t:t + G.H2].any()]
 
 
-G.starts = starts_nogap
-G.main("runs/20260914_1708_pipeline_h100_fairfight/params.npy", run_dir("greekstest_nogap"))
+if __name__ == "__main__":
+    G.starts = starts_nogap
+    G.main("runs/20260914_1708_pipeline_h100_fairfight/params.npy", run_dir("greekstest_nogap"))

@@ -1,4 +1,5 @@
 .venv/
+.venv-*/
 data/
 # Run outputs stay local; each run's pre-registration and write-up are tracked
 runs/*
@@ -25,11 +26,7 @@ paper/template/
 paper/arxiv/main.pdf
 paper/figs/slide_*.png
 
-# AgriAI build output (rebuild with paper/agriai/build.sh)
-paper/agriai/*.aux
-paper/agriai/*.log
-paper/agriai/*.bbl
-paper/agriai/*.blg
+# AgriAI PDFs copied here by paper/build.sh
 paper/agriai/*.pdf
 
 # Kept local: OpenReview reviews (repo is public) and WDPA data (no redistribution)

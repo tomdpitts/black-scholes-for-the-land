@@ -7,7 +7,7 @@ that fit's residual map from the same step of a random March-May season in 2003-
 anomaly split into starting deficit, rain, evaporative demand (Shapley over the two forcings, residual held
 fixed) and residual, averaged over the fits.
 
-  .venv/bin/python revision/fig_attribution_m4.py   -> paper/figs/candidates/fig_2022_attribution_m4.pdf/.png
+  .venv/bin/python revision/fig_attribution_m4.py   -> paper/figs/candidates/fig_2022_attribution_m4.png
 """
 import os
 import sys
@@ -120,9 +120,8 @@ def main():
                 color=INK, linespacing=1.15)
     bx.set_xlim(-0.4, 1.9); bx.set_xticks([]); bx.tick_params(left=False, labelleft=False)
     bx.spines["left"].set_visible(False); bx.spines["bottom"].set_visible(False)
-    fig.savefig(f"{OUT}.pdf", bbox_inches="tight")
     fig.savefig(f"{OUT}.png", dpi=220, bbox_inches="tight")
-    print(f"wrote {OUT}.pdf/.png")
+    print(f"wrote {OUT}.png")
 
 
 if __name__ == "__main__":

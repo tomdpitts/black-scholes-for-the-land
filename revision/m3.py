@@ -188,17 +188,19 @@ def fit(D, train_t, val_t, gated, sens, seed, steps=2000, lr=3e-3, log=print):
 
 
 # ----------------------------------------------------------------------------- scores
-def score(step_fn, w, D, mask_t, key=jax.random.PRNGKey(1)):
+def score(step_fn, w, D, mask_t, key=jax.random.PRNGKey(1), px=None):
     """One-step Gaussian CRPS and 1..H-step sampled-rollout CRPS (S samples, realised forcings).
-    step_fn(a, w, t_next) -> (mean, sigma, next w)."""
+    step_fn(a, w, t_next) -> (mean, sigma, next w). px: optional [N,N] pixel mask; the grid is still run
+    whole (neighbourhood features), only the scored pixels change."""
     T = D["a"].shape[0]
+    pm = jnp.ones(D["a"].shape[1:], bool) if px is None else jnp.asarray(px, bool)
 
     def body(_, t):
         m, sg, _ = step_fn(D["a"][t], w[t], t + 1)
         return None, M.crps_gauss(m, sg, D["a"][t + 1])
 
     cr = np.asarray(jax.lax.scan(body, None, jnp.arange(T - 1))[1])
-    ok = np.asarray(D["obs"][1:] & D["obs"][:-1]) & mask_t[:, None, None]
+    ok = np.asarray(D["obs"][1:] & D["obs"][:-1] & pm) & mask_t[:, None, None]
 
     @jax.jit
     def roll(t, k):
@@ -214,7 +216,7 @@ def score(step_fn, w, D, mask_t, key=jax.random.PRNGKey(1)):
 
         s = jax.vmap(sample)(jax.random.split(k, S))  # [S,H,N,N]
         y = jax.lax.dynamic_slice_in_dim(D["a"], t + 1, H, 0)
-        ob = jax.lax.dynamic_slice_in_dim(D["obs"], t + 1, H, 0) & D["obs"][t][None]
+        ob = jax.lax.dynamic_slice_in_dim(D["obs"], t + 1, H, 0) & D["obs"][t][None] & pm[None]
         c = jax.vmap(M.crps_samples, in_axes=(1, 0))(s, y)
         return jnp.sum(c * ob, (1, 2)), jnp.sum(ob, (1, 2))
 
@@ -227,11 +229,12 @@ def score(step_fn, w, D, mask_t, key=jax.random.PRNGKey(1)):
     return {"onestep_crps": float(cr[ok].mean()), "rollout_crps": (num / den).tolist()}
 
 
-def score_ensemble(ps, D, mask_t, per=4, key=jax.random.PRNGKey(1)):
+def score_ensemble(ps, D, mask_t, per=4, key=jax.random.PRNGKey(1), px=None):
     """1..H-step rollout CRPS of the equal-weight mixture of several fits: `per` samples from each
     fit, drawn by the same sampler as score(), pooled, then scored. (Stacking the fits' parameters
-    under one vmap gave different results once compiled; drawing per fit avoids that.)"""
+    under one vmap gave different results once compiled; drawing per fit avoids that.) px as in score()."""
     T = D["a"].shape[0]
+    pm = jnp.ones(D["a"].shape[1:], bool) if px is None else jnp.asarray(px, bool)
     rollers = []
     for p in ps:
         w, f = w_path(p, D), m3_step_fn(p, D)
@@ -250,7 +253,7 @@ def score_ensemble(ps, D, mask_t, per=4, key=jax.random.PRNGKey(1)):
     @jax.jit
     def crps(s, t):
         y = jax.lax.dynamic_slice_in_dim(D["a"], t + 1, H, 0)
-        ob = jax.lax.dynamic_slice_in_dim(D["obs"], t + 1, H, 0) & D["obs"][t][None]
+        ob = jax.lax.dynamic_slice_in_dim(D["obs"], t + 1, H, 0) & D["obs"][t][None] & pm[None]
         c = jax.vmap(M.crps_samples, in_axes=(1, 0))(s, y)
         return jnp.sum(c * ob, (1, 2)), jnp.sum(ob, (1, 2))
 

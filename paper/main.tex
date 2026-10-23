@@ -1,79 +1,99 @@
-\documentclass{article}
-\usepackage[dblblindworkshop]{neurips_2026}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{hyperref}
-\usepackage{xurl}
+\documentclass[letterpaper]{article} % DO NOT CHANGE THIS
+\usepackage{aaai2027}  % DO NOT CHANGE THIS
+\usepackage[hyphens]{url}  % DO NOT CHANGE THIS
+\usepackage{graphicx} % DO NOT CHANGE THIS
+\urlstyle{rm} % DO NOT CHANGE THIS
+\def\UrlFont{\rm}  % DO NOT CHANGE THIS
+\usepackage{natbib}  % DO NOT CHANGE THIS AND DO NOT ADD ANY OPTIONS TO IT
+\usepackage{caption} % DO NOT CHANGE THIS AND DO NOT ADD ANY OPTIONS TO IT
+\frenchspacing  % DO NOT CHANGE THIS
 \usepackage{booktabs}
 \usepackage{amsfonts}
 \usepackage{amsmath}
-\usepackage{microtype}
-\usepackage{graphicx}
-\usepackage{float}
+\graphicspath{{figs/}}
+\usepackage{xr}
+\externaldocument{supplement}
+\pdfinfo{
+/TemplateVersion (2027.1)
+}
+\setcounter{secnumdepth}{0}
 
-\title{Black--Scholes for the land:\\ modelling savannah response to rain as a dynamic world model}
-
-\author{Anonymous}
+\title{Black--Scholes for the Land:\\ Modelling Savannah Response to Rain as a Dynamic World Model}
+\author{
+    Thomas Pitts\textsuperscript{\rm 1},
+    Zhiyong Wang\textsuperscript{\rm 2}
+}
+\affiliations{
+    \textsuperscript{\rm 1}University of Technology Sydney\\
+    \textsuperscript{\rm 2}University of Sydney\\
+    thomas.pitts@uts.edu.au
+}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Carbon credits, offsets and index insurance rest on counterfactuals: what the land would have done under the same weather without management, or what a bad season cost. Current baselines fail in two ways: some ignore rain, others condition on rain linearly and annually. But the true response lags the rain, depends on hidden state such as moisture from other sources, and responds differently from pixel to pixel. Focussing on grassland pasture and rainfall specifically as a proof of concept, we fit a temporal world model of MODIS greenness conditioned on CHIRPS rain over two $45\times45$\,km regions in Laikipia, Kenya: a transition density map for greenness given recent and current rainfall. We use it, conceptually, as Black--Scholes is used. Inverting the model on observed greenness it yields an implied residual, everything the land did that the rain does not explain. Two capabilities drop out of this solution: 1) attribution, what the land did beyond the rain; 2) sensitivities, derivatives of the rollout with respect to rain and state, close analogues of the Greeks. On Laikipia test sites, our learned model recovers three-month greenness with $23\%$ less error than a history-only baseline and $13\%$ less than the best hand-written model on unseen years. In the 2022 drought, the land ended $0.17$ NDVI below normal; the rain that failed explains roughly half of that, and under normal rain with the same residual it would still have ended $0.10$ below. $\Delta$, the derivative of greenness with respect to rain, is computed at every pixel and averages $0.075$ NDVI per extra $100$\,mm of rain. A $\Delta$ at every pixel is an exposure to rain that can be hedged, allowing efficient pricing of contracts and accurate attribution. The deep learning approach we describe here could furthermore be used with other data inputs beyond rain to derive yet more finegrained attribution and sensitivities.
+Carbon credits, offsets and index insurance rest on counterfactuals: what the land would have done under the same weather without management, or what a bad season cost. Current baselines fail in two ways: some ignore rain, others condition on rain linearly and annually. But the true response lags the rain, depends on hidden state such as moisture from other sources, and responds differently from pixel to pixel. Focussing on grassland pasture and rainfall specifically as a proof of concept, we fit a temporal world model of MODIS greenness conditioned on CHIRPS rain and Copernicus Evaporative demand over two $45\times45$\,km regions in Laikipia, Kenya: a transition density map for greenness given recent and current rainfall. We use it, conceptually, as Black--Scholes is used. Inverting the model on observed greenness it yields an implied residual, everything the land did that the climate drivers do not explain. Two capabilities drop out of this solution: 1) attribution, what the land did beyond the rain; 2) sensitivities, derivatives of the rollout with respect to rain and state, close analogues of the Greeks. On Laikipia test sites, our learned model recovers three-month greenness with $23\%$ less error than a history-only baseline and $13\%$ less than the best hand-written model on unseen years. In the 2022 drought, the land ended $0.17$ NDVI below normal; the rain and ED that failed explains roughly half of that, and under normal conditions with the same residual it would still have ended $0.10$ below. $\Delta$, the derivative of greenness with respect to rain, is computed at every pixel and averages $0.075$ NDVI per extra $100$\,mm of rain. A $\Delta$ at every pixel is an exposure to rain that can be hedged, allowing efficient pricing of contracts and accurate attribution. The deep learning approach we describe here could furthermore be used with other data inputs beyond rain to derive yet more finegrained attribution and sensitivities.
 \end{abstract}
 
 \section{Approach}
-Various methodologies exist to measure the carbon capture attributable to sustainable grassland management practices, such as rotation of grazing animals, replanting strategies, and backburning. The Northern Kenya Rangelands Carbon Project, the world's largest soil carbon removal project, earns one credit per tonne of CO$_2$ stored in soil above a baseline set by VM0032, a pioneering grazing methodology \citep{vm0032,verra2023}. However, that baseline was contested enough for Verra to suspend issuance for eight months in 2023 \citep{verra2023,si2023}. Its baseline model, SNAP \citep{ritchie2014,nkgcp_pd2016}, uses only mean annual rainfall, rather than an input such as CHIRPS 16-day periodic rainfall \citep{nkcp} or even seasonal rain records. Elsewhere, livestock index insurance in the same counties pays on seasonal NDVI against the pixel's own history \citep{ibli}. For maximum efficiency, the insurer ideally would want to quantify forage loss attributed only to factors specifically included in the policy such as drought, rather than management decisions such as overgrazing. Both categories of payment would benefit from a clean split between what the land did because of the climate and what it did because of everything else, and to the best of our knowledge, no current operational baseline makes that split cleanly. The model we propose makes that split with climate factors as its conditioning input. In this work we demonstrate the concept with rainfall alone, the key climate driver in these rangelands \textbf{add citation}, estimating the specific terrain response from data as a transition density $p_\theta(a_{t+1}\mid a_t, w_t, r_{t+1})$ for the greenness anomaly $a$ given a rain-memory state $w$ and rainfall $r$.
+Various methodologies exist to measure the carbon capture attributable to sustainable grassland management practices, such as rotation of grazing animals, replanting strategies, and backburning. The Northern Kenya Rangelands Carbon Project, the world's largest soil carbon removal project, earns one credit per tonne of CO$_2$ stored in soil above a baseline set by VM0032, a pioneering grazing methodology \citep{vm0032,verra2023}. However, that baseline was contested enough for Verra to suspend issuance for eight months in 2023 \citep{verra2023,si2023}. Its baseline model, SNAP \citep{ritchie2014,nkgcp_pd2016}, uses only mean annual rainfall, rather than an input such as CHIRPS 16-day periodic rainfall \citep{nkcp} or even seasonal rain records. Elsewhere, livestock index insurance in the same counties pays on seasonal NDVI against the pixel's own history \citep{ibli}. For maximum efficiency, the insurer ideally would want to quantify forage loss attributed only to factors specifically included in the policy such as drought, rather than management decisions such as overgrazing. Both categories of payment would benefit from a clean split between what the land did because of the climate and what it did because of everything else, and to the best of our knowledge, no current operational baseline makes that split cleanly. The model we propose makes that split with climate factors as its conditioning input. In this work we demonstrate the concept with two key climate drivers \textbf{add citation for the word "key" here} in these rangelands, CHIRPS rainfall and Copernicus evaporative demand (ED) \textbf{add citation}, estimating the specific terrain response from data as a transition density $p_\theta(a_{t+1}\mid a_t, w_t, r_{t+1})$ for the greenness anomaly $a$ given a rain-memory state $w$ and rainfall $r$. We also show that adding static attributes (TODO cite Kratzert 2019) materially improves the model's skill in forecasts over single-step (16 days) and 3-month timeframes, by adding in topography in the form of Copernicus DEM GLO-30 elevation, slope, and topographic position \textbf{add citation}.
 
-A Black-Scholes formula (BSF) model \cite{bs} is fed observables such as current stock price, strike price, and used to derive a parameter value -- implied volatility -- which cannot be observed directly but is implied by the market's current pricing of options. In our model the observables are the total state and the rain that fell, and the model is inverted on observed greenness. What comes out is the residual i.e. what the land did beyond what the rain by itself explains. Furthermore, specific values can also be plugged back in to the model. The model can be re-run with the residual held fixed and the rain replaced, and it returns the land under that other rain with everything else as it was. Derivatives come by automatic differentiation, as the Greeks come from the BSF.
+A Black-Scholes formula (BSF) model \citep{bs} is fed observables such as current stock price, strike price, and used to derive a parameter value -- implied volatility -- which cannot be observed directly but is implied by the market's current pricing of options. In our model the observables are the total state, alongside the rainfall and ED, and the model is inverted on observed greenness. What comes out is the residual i.e. what the land did beyond what the climate drivers by themselves explain. Furthermore, specific values can also be plugged back in to the model. The model can be re-run with the residual held fixed and the rain replaced, and it returns the land under that other rain with everything else as it was. Derivatives come by automatic differentiation, as the Greeks come from the BSF.
 
-\begin{figure}[t]
-\centering\includegraphics[width=\linewidth]{figs/candidates/fig_maps_split_2022.pdf}
-\end{figure}
+\begin{figure*}[t]
+\centering\includegraphics[width=\textwidth]{chronos2/fig_maps_split_2022_m4e.png}
+\end{figure*}
 
 \paragraph{Pixel characteristics}
 
-\paragraph{Residual} We use the term `residual' to encompass any deviation between the rain-adjusted modelled expectation and the observed ground truth. For clarity, this includes the impacts of all other factors such as grazing, clearing, and fire, the management and disturbance signal itself, but also any climate effects other than rain (temperature, evaporative demand) that this demonstration does not condition on, as well as model error and noise in data sources. 
+\paragraph{Residual} We use the term `residual' to encompass any deviation between the climate-adjusted modelled expectation and the observed ground truth. For clarity, this includes the impacts of all other factors such as grazing, clearing, and fire, the management and disturbance signal itself, but also any climate effects other than rainfall and ED that this demonstration does not condition on, as well as noise in data sources. 
 
+
+\section{Related Work}
+Separating climate from land use in vegetation records is an old problem. Residual trend analysis regresses annual or growing-season NDVI on accumulated rainfall and reads trends in the residual as human-induced degradation \citep{evans2004,wessels2007}; later variants find breakpoints in the residual trend \citep{burrell2017}, and vegetation sensitivity indices add a one-month memory term \citep{seddon2016}. These are linear in their drivers and fitted pixel by pixel at annual or monthly scale. M1 below is a 16-day version; M2 replaces the regression with a learned, state-dependent transition density shared across pixels. In East Africa, NDVI tracks the rain of the current and two preceding months, with a response that has been found to flatten in wetter areas \citep{nicholson1990,davenport1993}. Operational drought monitoring and livestock insurance in Kenya score NDVI against the pixel's own history \citep{kogan1990,klisch2016,vrieling2014,ibli} i.e. the history-only baseline M0. Deep temporal models conditioned on weather already predict crop yield \citep{shook2021}; probabilistic deep forecasters and time-series foundation models output predictive densities \citep{salinas2020,rasul2023,ansari2024}, and one has forecast leaf area index zero-shot \citep{zhang2025}. To the best of our knowledge, none are built to be inverted on observations or re-run under another driver path.
 
 \section{Setup}
-\paragraph{Data} The target $a_t$ is greenness, the normalised difference vegetation index (NDVI) from the MODIS satellite product MOD13Q1, at $250$\,m every 16 days (one composite), 2002--2025, as an anomaly against each pixel's 2003--2018 climatology. The z-score used throughout is this anomaly divided by the pixel's standard deviation for that time of year. The input $r_t$ is rain from CHIRPS summed over the same 16-day windows, in units of $100$\,mm. The setting is two $45$\,km regions in Laikipia, Kenya, with rains in March--May and October--December: Box A (development) and Box B (held-out landscape) to its west (Figure~\ref{fig:map}, Appendix). We fit on Box A 2003--2017, early-stop on 2018, and evaluate on Box A 2019--2025, 14 seasons including the 2021--22 drought and 2023 recovery, and on Box B in every year.
+\paragraph{Data} The target $a_t$ is greenness, the normalised difference vegetation index (NDVI) from the MODIS satellite product MOD13Q1 \citep{mod13}, at $250$\,m every 16 days (one composite), 2002--2025, as an anomaly against each pixel's 2003--2018 climatology. The z-score used throughout is this anomaly divided by the pixel's standard deviation for that time of year. The input $r_t$ is rain from CHIRPS \citep{chirps} summed over the same 16-day windows, in units of $100$\,mm. The setting is two $45$\,km regions in Laikipia, Kenya, with rains in March--May and October--December: Box A (development) and Box B (held-out landscape) to its west (Figure~\ref{fig:map}, Appendix). We fit on Box A 2003--2017, early-stop on 2018, and evaluate on Box A 2019--2025, 14 seasons including the 2021--22 drought and 2023 recovery, and on Box B for the same 2019--2025 timeframe.
 
 \paragraph{Model} Each step sees only the current state, not the series i.e. Markovian. The state is the anomaly $a_t$ and an antecedent-rain index $w_t$, a one-parameter bucket whose memory $\lambda(x)$ depends on the pixel's traits:
-\begin{equation}
-w_{t+1} = \lambda(x)\,w_t + r_{t+1}, \qquad
-a_{t+1} = a_t + \mu_\theta(a_t, \bar a_t, w_t, r_{t+1}, \phi_{t+1}, x) + \sigma_\theta(\cdot)\,\varepsilon_t,\quad \varepsilon_t\sim\mathcal N(0,1),
+\begin{align}
+w_{t+1} &= \lambda(x)\,w_t + r_{t+1}, \nonumber\\
+a_{t+1} &= a_t + \mu_\theta(a_t, \bar a_t, w_t, r_{t+1}, \phi_{t+1}, x) \nonumber\\
+&\quad + \sigma_\theta(\cdot)\,\varepsilon_t,\qquad \varepsilon_t\sim\mathcal N(0,1),
 \label{eq:model}
-\end{equation}
-where $t$ indexes 16-day steps, $\bar a_t$ is the $5\times5$ neighbourhood mean of $a_t$, $\phi_{t+1}$ is the seasonal phase (sine and cosine of day of year), and $x$ is three static traits of the pixel: mean NDVI, seasonal amplitude and climatological annual rain. $w_t$ is a decaying sum of past rain that keeps a fraction $\lambda(x)=\mathrm{sigmoid}(c_0+c^\top x)$ each step. $\mu_\theta$ is the expected change in the anomaly and $\sigma_\theta$ its spread, both functions of the same six inputs, so $p_\theta(a_{t+1}\mid\cdot)=\mathcal N(a_t+\mu_\theta,\sigma_\theta^2)$; $\theta$ is one set of weights shared by every pixel. \textbf{M0} uses history alone. \textbf{M1} has $\mu$ and $\log\sigma$ linear in the features. \textbf{M1.5} adds a hand-written S-curve in $w_t+r_{t+1}$, six parameters. \textbf{M2} adds a 64-unit one-hidden-layer network to $\mu$ and $\log\sigma$. All are fitted by full-batch Adam on the one-step Gaussian log-likelihood of observed transitions.
+\end{align}
+where $t$ indexes 16-day steps, $\bar a_t$ is the $5\times5$ neighbourhood mean of $a_t$, $\phi_{t+1}$ is the seasonal phase (sine and cosine of day of year), and $x$ is three static traits of the pixel: mean NDVI, seasonal amplitude and climatological annual rain. $w_t$ is a decaying sum of past rain that keeps a fraction $\lambda(x)=\mathrm{sigmoid}(c_0+c^\top x)$ each step. $\mu_\theta$ is the expected change in the anomaly and $\sigma_\theta$ its spread, both functions of the same six inputs, so $p_\theta(a_{t+1}\mid\cdot)=\mathcal N(a_t+\mu_\theta,\sigma_\theta^2)$; $\theta$ is one set of weights shared by every pixel. \textbf{M0} uses history alone. \textbf{M1} has $\mu$ and $\log\sigma$ linear in the features. \textbf{M1.5} adds a hand-written S-curve in $w_t+r_{t+1}$, six parameters. \textbf{M2} adds a 64-unit one-hidden-layer network to $\mu$ and $\log\sigma$. All are fitted by full-batch Adam \citep{kingma2015} on the one-step Gaussian log-likelihood of observed transitions.
 
-\paragraph{Residual} Inverting \eqref{eq:model} on an observed transition gives the implied innovation,
+\paragraph{Residual} Inverting \eqref{eq:model} on an observed transition gives the implied (standardised) residual,
 \begin{equation}
 \hat\varepsilon_t = \frac{a_{t+1} - a_t - \mu_\theta(a_t,\bar a_t,w_t,r_{t+1},\phi_{t+1},x)}{\sigma_\theta(\cdot)},
 \label{eq:implied}
 \end{equation}
 one number per pixel per 16 days, in units of the model's own spread. Accumulated over a season it is the attribution product: $a_{t+h}-F_h$, where $F_h=\mathbb E[a_{t+h}]$ is the mean rollout along the rain that fell, with the model's spread as its interval. The counterfactual re-runs \eqref{eq:model} from the same state along another rain path $r'$ with $\hat\varepsilon$ held fixed:
-\begin{equation}
-\tilde a_{t+1} = \tilde a_t + \mu_\theta(\tilde a_t,\bar{\tilde a}_t,\tilde w_t,r'_{t+1},\phi_{t+1},x) + \sigma_\theta(\cdot)\,\hat\varepsilon_t,\qquad \tilde w_{t+1}=\lambda(x)\,\tilde w_t + r'_{t+1},\qquad \tilde a_t = a_t.
+\begin{align}
+\tilde a_{t+1} &= \tilde a_t + \mu_\theta(\tilde a_t,\bar{\tilde a}_t,\tilde w_t,r'_{t+1},\phi_{t+1},x) \nonumber\\
+&\quad + \sigma_\theta(\cdot)\,\hat\varepsilon_t, \nonumber\\
+\tilde w_{t+1} &= \lambda(x)\,\tilde w_t + r'_{t+1},\qquad \tilde a_t = a_t.
 \label{eq:cf}
-\end{equation}
-A tilde marks the counterfactual state. This is the abduction, action, prediction counterfactual of structural causal models: infer the exogenous term, change the input, roll forward. Any rain path can be chosen for $r'$. If set to the rain that fell, \eqref{eq:cf} returns the observation exactly; if set to the average rain for that time of year, it returns the land under normal rain with residual intact. Sensitivities (following BSF Greeks) are Jacobian-vector products through the rollout: $\Delta_h=\partial F_h/\partial r_{t+1}$, greenness $h$ steps ahead per $100$\,mm of rain now; $\Theta_h=\partial F_h/\partial a_t$, how much of today's anomaly survives. The anomaly score is $-\log p_\theta(a_{t+1}\mid a_t,w_t,r_{t+1})$ i.e. the surprise of the rain-conditioned model at what the satellite saw. N.B. the residual and the score are (approximately) two readings of the same quantity.
+\end{align}
+A tilde marks the counterfactual state. This is the abduction, action, prediction counterfactual of structural causal models \citep{pearl2009}: infer the exogenous term, change the input, roll forward. Any rain path can be chosen for $r'$. If set to the rain that fell, \eqref{eq:cf} returns the observation exactly; if set to the average rain for that time of year, it returns the land under normal rain with residual intact. Sensitivities (following BSF Greeks) are Jacobian-vector products through the rollout: $\Delta_h=\partial F_h/\partial r_{t+1}$, greenness $h$ steps ahead per $100$\,mm of rain now; $\Theta_h=\partial F_h/\partial a_t$, how much of today's anomaly survives. The anomaly score is $-\log p_\theta(a_{t+1}\mid a_t,w_t,r_{t+1})$ i.e. the surprise of the rain-conditioned model at what the satellite saw. N.B. the residual and the score are (approximately) two readings of the same quantity.
 
-\paragraph{Evaluation} Error is the continuous ranked probability score (CRPS), the probabilistic generalisation of absolute error, on observed held-out pixel-steps (one pixel at one 16-day composite); skill is $1-\mathrm{CRPS}/\mathrm{CRPS}_{\mathrm{M0}}$. Each model is scored one step (16 days) ahead, and rolled forward three months along the rain that fell.
+\paragraph{Evaluation} Error is the continuous ranked probability score (CRPS) \citep{gneiting2007}, the probabilistic generalisation of absolute error, on observed held-out pixel-steps (one pixel at one 16-day composite); skill is $1-\mathrm{CRPS}/\mathrm{CRPS}_{\mathrm{M0}}$. Each model is scored one step (16 days) ahead, and rolled forward three months along the rain that fell.
 
 \section{Results}
-\begin{figure}[t]
-\centering\includegraphics[width=\linewidth]{figs/fig_attribution.pdf}
+\begin{figure*}[t]
+\centering\includegraphics[width=\textwidth]{fig_attribution.png}
 \caption{The 2022 drought, Box A, a held-out year, box means. Grey dashed: history only, the incumbents' baseline. Blue: what the learned model expects from the rain that fell, residual set to zero. Black: observed. Shading: $90\%$ range of the same rollout with ordinary-year residuals re-injected (Appendix). Right: the season-end anomaly split into the deficit the season began with, the rain's share (observed minus the counterfactual of \eqref{eq:cf} under normal rain), and the residual (observed minus blue). History says recovery, the model says half the fall, the land fell further.}
 \label{fig:attribution}
-\end{figure}
+\end{figure*}
 
 \paragraph{Fit} M2's one-step skill exceeds M1's by $0.07$ on unseen years and $0.05$ on the unseen landscape, and its spread is calibrated (Appendix). Along the rain that fell, three-month error is $23\%$ below history and $13\%$ below the S-curve on unseen years, $17\%$ and $8\%$ on the unseen landscape (Figure~\ref{fig:response}, Table~\ref{tab:onestep}). Fed climatological rain the same network falls behind history within two months; fitted without rain its skill is $0.016$. The S-curve's amplitude fitted near zero: the nonlinearity is in how rain interacts with pixel, state and season, not in rain alone.
 
 \paragraph{Residual and counterfactual} In October--December 2020 rain was $38$\,mm below normal and the counterfactual ends within $0.05$ NDVI of the observation: near-normal rain, near-zero rain effect. In March--May 2022 rain was $124$\,mm below normal: the box ended $0.17$ NDVI below normal (Figure~\ref{fig:attribution}). History alone predicts recovery, so a z-score assigns the whole $0.17$ to the land. The model assigns $0.07$ to the rain that failed, $0.07$ to the residual, and the rest to the deficit the season began with; under normal rain with the residual held fixed the land ends $0.10$ below. That normal-rain run is the baseline for a credit; observed minus it is the rain's share, the quantity an index insurer pays on. The land leaves the range of ordinary non-rain variation only in the last month of the season, and history's recovery sits at that range's upper edge. Where rain is more than $60$\,mm below normal the residual is systematically negative: part of the 2022 residual is model under-response to a drought deeper than its training. Read as a likelihood, the same residual tells drought from disturbance: with every score tuned to flag $5\%$ of unburned land, the two drought seasons draw $24\%$ false alarms from a z-score and $5\%$ from the model (Table~\ref{tab:anomaly}). Scoring the residual against mapped burns is out of scope here; protocol, figure and full results are in the Appendix (Figure~\ref{fig:fire}).
 
-\paragraph{Sensitivities} 
-\begin{table}[t]\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\paragraph{Sensitivities}
+\begin{table*}[t]\centering\footnotesize\setlength{\tabcolsep}{3pt}
 \caption{Does $\Delta$ rank patches by their real response to rain? Held-out rainy-season steps 2019--25, in thirds by M2's $\Delta$ at the starting state, split at each box's median rain departure. Response: NDVI change two steps on per $100$\,mm of rain anomaly, given starting greenness; $\pm$ two bootstrap s.d.; bold clears zero.}\label{tab:greeks}
 \begin{tabular}{llccccc}\toprule
  & Rain & \multicolumn{3}{c}{Real response, by $\Delta$ third} & Model $\Delta$ & Most $-$\\
@@ -83,8 +103,7 @@ A, unseen years & $\le 30$\,mm & $.096\pm.092$ & $.088\pm.100$ & $.147\pm.096$ &
 B, unseen land & $\le 21$\,mm & $.083\pm.066$ & $.286\pm.238$ & $.237\pm.140$ & $.064/.097/.122$ & $\mathbf{.154\pm.135}$\\
  & $> 21$\,mm & $.062\pm.042$ & $.087\pm.048$ & $.131\pm.034$ & $.066/.098/.123$ & $\mathbf{.070\pm.051}$\\\bottomrule
 \end{tabular}
-\end{table}
-
+\end{table*}
 
 \textbf{$\Delta$ -- } On the grid mean an extra $100$\,mm of rain in March--May raises greenness by a (mean) peak of $0.075$ NDVI a month later, positive in sign at every pixel and half gone by three months ($.029/.075/.073/.060/.047/.036$ by 16-day step). Recomputed from the current state at each rainy-season step, $\Delta$ sorts exposure well. Sorted by $\Delta$, the top third of patches green about twice as much per $100$\,mm as the least, on unseen years and landscape, with the right magnitudes on that landscape (Table~\ref{tab:greeks}). We also find that the response is a property of the pixel's state, not of the pixel: a frozen map averaged over the training years is no better than a single constant (Table~\ref{tab:greekstests}), and its rank correlation with the real response drops from $0.70$ to $0.38$ frozen on Box A.
 
@@ -92,69 +111,8 @@ B, unseen land & $\le 21$\,mm & $.083\pm.066$ & $.286\pm.238$ & $.237\pm.140$ & 
 
 \textbf{$\partial\sigma/\partial r$ -- } The model predicts both a spread $\sigma$ and a mean $\mu$. An extra $100$\,mm widens the one-step spread by a mean average of $21\%$ on Box A and $32\%$ on the unseen landscape, at every pixel individually. Held-out steps bear it out: sorted by the rain that fell, predicted spread rises from $.060$ to $.082$ as realised error rises from $.061$ to $.093$, although the model in its current configuration still under-predicts spread through the middle of that range. Black--Scholes has no equivalent because it assumes $\sigma$ constant -- the volatility smile \citep{rubinstein1994,dupire1994} is an artifact of this assumption's limitation.
 
-
 \section{Conclusion}
 Inverting our learned transition density world model on observed satellite data produces the residual, what the land did beyond the rain's effect. By differentiation, it returns key sensitivities --- what a pixel's greenness is attributable to, how long a shock to it lasts, and how much rain widens the range of outcomes. Read as a likelihood, it tells drought from exogenous disturbance. In March--May 2022, a held-out year, Box A ended $0.17$ NDVI below normal. The model accounts $0.07$ to the rain that failed, and re-run under normal rain with the residual held fixed the land still ends $0.10$ below, representing a baseline a credit or a payout should be measured against (Figure~\ref{fig:attribution}). A z-score would predict recovery that season and attribute the whole $0.17$ to management. While only a proof of concept on limited data and with various simplifications, we believe this invertible transition density approach has real potential to practical world modelling of complex real-world temporal systems that has genuine utility.
 
-\begin{thebibliography}{9}\raggedright
-\bibitem[Seddon et al.(2016)]{seddon2016} A. W. R. Seddon, M. Macias-Fauria, P. R. Long, D. Benz, K. J. Willis. Sensitivity of global terrestrial ecosystems to climate variability. \emph{Nature} 531, 2016.
-\bibitem[Funk et al.(2015)]{chirps} C. Funk et al. The climate hazards infrared precipitation with stations. \emph{Scientific Data} 2, 2015.
-\bibitem[Didan(2021)]{mod13} K. Didan. MODIS/Terra Vegetation Indices 16-Day L3 Global 250m SIN Grid V061. NASA EOSDIS LP DAAC, 2021.
-\bibitem[Giglio et al.(2018)]{mcd64} L. Giglio, L. Boschetti, D. P. Roy, M. L. Humber, C. O. Justice. The Collection 6 MODIS burned area mapping algorithm and product. \emph{Remote Sensing of Environment} 217, 2018.
-\bibitem[Verra(2023)]{verra2023} Verra. Update: Northern Kenya Grassland Carbon Project. Program notice, 26 March 2023. \url{https://verra.org/program-notice/update-northern-kenya-grassland-carbon-project/}
-\bibitem[Verra(2015)]{vm0032} Verra. VM0032 Methodology for the Adoption of Sustainable Grasslands through Adjustment of Fire and Grazing, Version 1.0. Verified Carbon Standard, 16 July 2015. \url{https://verra.org/methodologies/vm0032-methodology-for-the-adoption-of-sustainable-grasslands-through-adjustment-of-fire-and-grazing-v1-0/}
-\bibitem[Ritchie(2014)]{ritchie2014} M. E. Ritchie. Plant compensation to grazing and soil carbon dynamics in a tropical grassland. \emph{PeerJ} 2, e233, 2014.
-\bibitem[Northern Rangelands Trust et al.(2016)]{nkgcp_pd2016} Northern Rangelands Trust, Soils for the Future, The Nature Conservancy. Northern Kenya Grassland Carbon Project: Project Description (VCS Version 3, CCB Standards Third Edition), v1.0. Verra project 1468, 15 August 2016. \url{https://verra.org/wp-content/uploads/2016/09/CCB_PROJ_DESC_1468_15AUG2016.pdf}
-\bibitem[Northern Kenya Rangelands Carbon Project(2026)]{nkcp} Northern Kenya Rangelands Carbon Project. FAQs. \url{https://www.northernkenyacommunitycarbon.org/faq}, accessed October 2026.
-\bibitem[Survival International(2023)]{si2023} Survival International. Verra's `review' of the Northern Rangelands Trust carbon project. November 2023. \url{https://assets.survivalinternational.org/documents/2501/2311_Response_to_Verra_review_of_NRT_carbon_project.pdf}
-\bibitem[Chantarat et al.(2013)]{ibli} S. Chantarat, A. G. Mude, C. B. Barrett, M. R. Carter. Designing index-based livestock insurance for managing asset risk in northern Kenya. \emph{Journal of Risk and Insurance} 80, 2013.
-\bibitem[Black and Scholes(1973)]{bs} F. Black, M. Scholes. The pricing of options and corporate liabilities. \emph{Journal of Political Economy} 81, 1973.
-\bibitem[Rubinstein(1994)]{rubinstein1994} M. Rubinstein. Implied binomial trees. \emph{Journal of Finance} 49(3), 1994.
-\bibitem[Dupire(1994)]{dupire1994} B. Dupire. Pricing with a smile. \emph{Risk} 7(1), 1994.
-\end{thebibliography}
-
-\appendix
-\section{Location, data, tables, calibration, fitting}
-\paragraph{Data and preparation} Three sources are fused onto one grid and one calendar. The surface is MODIS Terra MOD13Q1 v061 NDVI at $250$\,m, one composite per 16 days from 2002 to 2025 (537 composites), warped to a $0.0025^\circ$ grid of $160\times160$ pixels per box. Pixels whose reliability flag exceeds 1 (cloud, snow, fill; $2\%$ of pixel-steps) are treated as unobserved: their values are interpolated in time so the model always has an input state, but they are never used as targets. Each pixel's climatology is its mean NDVI per composite-of-year over 2003--2018, and the anomaly $a_t$ is NDVI minus that climatology. The driver is CHIRPS v2 daily rainfall at $0.05^\circ$, summed over each composite's 16-day window and bilinearly resampled to the grid, in units of $100$\,mm, with a climatology built the same way. Static covariates $x$ are the pixel's mean NDVI, seasonal amplitude and climatological annual rain. MCD64A1 burned area gives the day each $500$\,m cell burned, and a pixel is marked burned in the composite window containing that day. The MODIS record has gaps: no composites for 61 days after 1 November 2021, so October--December 2021, one of the two drought seasons, contributes two composites, and about 30 days after 2 February 2023, 27 July 2024 and 2 December 2024. Steps spanning a gap are not yet excluded from any analysis.
-\paragraph{Residual runs} The residual and counterfactual of Figures~\ref{fig:attribution} and~\ref{fig:fire} use the fitted M2 with no refitting; each season starts from the observed state before its first 16-day window and runs six windows. The shaded range in Figure~\ref{fig:attribution} re-runs March--May 2022 along its observed rain 500 times, each step's residual a whole map drawn from the same step of a random March--May season in 2003--2017, which keeps the residual's spatial correlation. Re-injecting $\hat\varepsilon$ along the rain that fell reproduces the observed anomaly to a maximum absolute error of $10^{-6}$ in every season. Box-mean anomaly at three months for all 13 held-out seasons is in the supplementary run directory. The year-to-year persistence of the residual and its forecast value were tested with a per-pixel, per-year latent in the drift, inferred by MAP on one year and used to forecast the next: the latent beats a pixel-shuffled control on both boxes but improves three-month error by $0.3$--$0.6\%$, not significant on either. Residual against rain, held-out rainy-season pixel-steps: correlation $0.05$ ($0.03$ on training years); mean residual in spread units by rain departure, below $-60$\,mm / $-60$ to $-30$ / $-30$ to $0$ / $0$ to $30$ / $30$ to $60$ / $60$ to $120$ / above $120$\,mm: $-0.24$, $-0.03$, $-0.03$, $+0.22$, $+0.05$, $+0.10$, $-0.01$ on held-out years against $-0.04$, $+0.07$, $+0.12$, $+0.16$, $+0.13$, $+0.09$, $+0.20$ on training years. Fire, 17 January 2021 burn scored on the 2 February composite: mean residual on burned pixels $-0.75$ against $-0.04$ elsewhere; mean z-score $-0.17$ against $-0.13$.
-\begin{figure}[H]
-\centering\includegraphics[width=\linewidth]{figs/fig_map.pdf}
-\caption{Where. Left: Kenya with the two $45$\,km boxes; Box A spans $37.15$--$37.55^\circ$E, $0.05$--$0.45^\circ$N, Box B $36.70$--$37.10^\circ$E, $0.25$--$0.65^\circ$N. Centre and right: Sentinel-2 true colour of each box in the 2023 dry season; dark green is forest and riverine woodland, pale is open rangeland.}
-\label{fig:map}
-\end{figure}
-\begin{table}[H]\centering\caption{One-step scores on observed held-out transitions. NLL is Gaussian negative log-likelihood per transition; skill is $1-\mathrm{CRPS}/\mathrm{CRPS}_{\mathrm{M0}}$.}\label{tab:onestep}\small
-\input{tables_onestep}\end{table}
-\paragraph{Anomaly protocol} A pixel-step is flagged when its score exceeds a cutoff. The three scores (M2, M1, z-score) are on different scales, so each gets its own cutoff, set to flag $5\%$ of pixel-steps where nothing burned. With false alarms equalised, we ask what fraction of burned pixels each score flags within a month of the burn, and what fraction of pixel-steps it flags in the two drought seasons, when the land browned but nothing burned. This is a probe rather than a benchmark: one landscape, 208 burned pixel-composites, a score that flags only drops --- a variant adopted after the pre-registered two-sided score was run --- and one of the two drought seasons, October--December 2021, reduced to two composites by a gap in the MODIS record.
-\begin{figure}[H]
-\centering\includegraphics[width=0.6\linewidth]{figs/fig_fire.pdf}
-\caption{A burn on 17 January 2021 (outlined, 50 pixels), scored one composite later. (a) The residual of \eqref{eq:implied}: the burn is the red patch. (b) The z-score, the same composite against the pixel's own history: the burn is invisible. (c) Sentinel-2 true colour ten days after the burn: a harvested field on irrigated cropland, $80\%$ of the outline by area.}
-\label{fig:fire}
-\end{figure}
-\begin{table}[H]\centering\caption{Anomaly detection scored on fire, Box A 2019--25, 208 burned pixel-composites. Hit rate: burns flagged within two composites. Lag: mean composites from burn to flag among hits. FAR: unburned pixel-steps flagged in October--December 2021 and March--May 2022. AUC: rank separation of burns from unburned pixel-steps. Upper block: pre-registered two-sided score; lower block: one-sided drop score, post hoc.}\label{tab:anomaly}\small
-\input{tables_anomaly}\end{table}
-\begin{figure}[H]
-\centering\includegraphics[width=0.7\linewidth]{figs/fig2_response.pdf}
-\caption{Given the rain that fell, how well does each model recover what the land did? CRPS of sampled rollouts against the observed anomaly along the known rain path; no model uses a rain forecast. Grey dashed: M2 fed climatological rain. Right axis: error as a share of a typical $0.2$ NDVI seasonal swing.}
-\label{fig:response}
-\end{figure}
-\begin{figure}[H]
-\centering\includegraphics[width=0.6\linewidth]{figs/fig3_calibration.pdf}
-\caption{M2 calibration on held-out sets: RMSE against predicted spread by decile, and the PIT histogram on Box A 2019--25.}
-\end{figure}
-\begin{figure}[H]
-\centering\includegraphics[width=0.96\linewidth]{figs/fig1_greeks.pdf}
-\caption{Box A, held-out years. Left: $\Delta$ of the fitted density two steps after $100$\,mm of extra rain in the long rains. Middle: the observed seasonal response, binned NDVI anomaly against seasonal rain anomaly, with its quadratic coefficient; a property of the data, not a model derivative. Right: $\Theta=\partial F_h/\partial a_t$, persistence of an anomaly by horizon and season. Its half-life is $35$ days in the long rains, $34$ in the short and $38$ in the dry, against $38$ days in the anomaly's own $16$-day autocorrelation over 2003--2018 ($.73/.56/.30/.17$ at $1/2/4/6$ steps). That is a model-free check, and one $\Theta$ should undercut slightly, since it holds the rain memory $w$ fixed and so drops the persistence that is really rain's: M2 does ($.70/.50/.26/.15$), while the S-curve runs long in the other direction ($.79/.62/.38/.24$, $46$ days).}
-\label{fig:greeks}
-\end{figure}
-\begin{table}[H]\centering\caption{Pre-registered tests of $\Delta$, written after fitting and before running; primary G1 on Box A. Gaps are real response of the most minus the least $\Delta$ third (NDVI per $100$\,mm); G3 is two-step skill against persistence of $\alpha+\beta\,\Delta\,x$. Brackets: $95\%$ bootstrap interval over test years.}\label{tab:greekstests}\small
-\begin{tabular}{lcc}\toprule
-Test & Box A & Box B\\\midrule
-G1 (primary): within pixel & $+.026$ $[-.026, +.070]$ fail & $+.064$ $[+.014, +.116]$\\
-G2: across pixels, all rain & $+.047$ $[+.005, +.084]$ pass & $+.062$ $[+.009, +.110]$\\
-G3: skill, minus constant & $+.010$ $[-.023, +.050]$ fail & $+.006$ $[-.005, +.018]$\\
-G3: skill, minus frozen map & $+.002$ $[-.031, +.044]$ fail & $+.007$ $[-.004, +.019]$\\
-Size: small minus large & $+.008$ $[-.102, +.176]$ fail & $+.084$ $[-.060, +.221]$ fail\\
-M1.5, across pixels & $-.052$ $[-.122, -.001]$ & $+.008$ $[-.117, +.085]$\\\bottomrule
-\end{tabular}\end{table}
-\paragraph{Fitting} We use full-batch Adam at a learning rate of $3\times10^{-3}$, running 800 steps for M0 and M1 and 2000 for M1.5 and M2, with early stopping on 2018 log-likelihood; each step uses all $25\,600$ pixels and the $\sim340$ training-year transitions. M2 fits in 190\,s on one H100, and a refit moves one-step skill by about $0.005$. The fitted rain memory $\lambda$ is $0.16$ for M1, $0.21$ for M1.5 and $0.38$ for M2. Jacobian-vector products of the six-step mean rollout agree with central finite differences to $10^{-4}$ absolute, against a $\Delta$ of order $10^{-2}$. Code and the run directory behind every number are in the supplementary repository.
+\bibliography{references}
 \end{document}
