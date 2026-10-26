@@ -1,12 +1,13 @@
 """Box A, March-May 2022 with Chronos-2 (zero-shot, with weather): as fig_maps_split_m4.py, same layout.
 
-Per pixel at season end, NDVI units, from runs/20261022_1639_suite/c2_drought.npz (revision/c2.py drought, full box):
-  rain, evaporative demand   Shapley over the two forcings, percentiles held fixed (suite.py drought's formula)
-  residual                   observed - median path under the weather that fell (percentile 50 at every step)
-  baseline                   observed - rain - demand - residual
+Per pixel at season end, NDVI units, from c2_drought0.npz (revision/c2.py drought0, full box, CPU); every run
+from the late-Feb state as the median path (percentile 50 at every step), as fig_maps_split_m4.py:
+  baseline                   the median path under normal weather
+  rain, evaporative demand   Shapley over the two forcings (the four weather combinations)
+  residual                   observed - the median path under the weather that fell
 Residual blocks are not faded: Chronos-2 has no ordinary-season (2003-17) residual range yet.
 
-  .venv/bin/python revision/fig_maps_split_c2.py   -> paper/figs/chronos2/fig_maps_split_2022_c2.png
+  .venv/bin/python revision/fig_maps_split_c2.py [c2_drought0.npz]   -> paper/figs/chronos2/fig_maps_split_2022_c2.png
 """
 import os
 import sys
@@ -21,7 +22,7 @@ from fig_maps_split import blocks  # noqa: E402
 import m3  # noqa: E402
 from fig_maps_split_m4 import draw  # noqa: E402
 
-C2 = "runs/20261022_1639_suite/c2_drought.npz"
+C2 = sys.argv[1] if len(sys.argv) > 1 else "runs/20261026_1312_c2_split0/c2_drought0.npz"
 OUT = "paper/figs/chronos2/fig_maps_split_2022_c2"
 
 
@@ -31,13 +32,12 @@ def main():
     C = np.load(C2)
     assert int(C["t0"]) == t0 and len(C["px"]) == d["a"][0].size
     sq = lambda k: C[k].reshape(d["a"][0].shape)
-    obs, F, cr, ct, crt = map(sq, ("obs", "F", "cf_r", "cf_t", "cf_rt"))
+    obs, F, cr, ct, crt = map(sq, ("obs", "F0", "cf_r0", "cf_t0", "cf_rt0"))
     assert np.allclose(obs, d["a"][t0 + H], atol=1e-6)
-    rain = 0.5 * ((obs - cr) + (ct - crt))
-    demand = 0.5 * ((obs - ct) + (cr - crt))
-    resid = obs - F
+    rain = 0.5 * ((F - cr) + (ct - crt))
+    demand = 0.5 * ((F - ct) + (cr - crt))
     ok = d["obs"][t0 + H].astype(bool)
-    maps = [blocks(m, ok) for m in (obs, obs - rain - demand - resid, rain, demand, resid)]
+    maps = [blocks(m, ok) for m in (obs, crt, rain, demand, obs - F)]
     elev = blocks(np.load("data/A/topo.npz")["elev"])
     means = [float(np.nanmean(m)) for m in maps]
     sl = slice(t0 + 1, t0 + 1 + H)

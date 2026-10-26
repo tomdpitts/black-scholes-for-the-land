@@ -88,7 +88,7 @@ def main(box="A"):
     cb = fig.colorbar(im, cax=cax, orientation="horizontal", ticks=[0, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14])
     cb.ax.tick_params(labelsize=6.5, length=2); cb.outline.set_linewidth(0.4)
     cb.set_label("Extra greenness (NDVI) per 100 mm of extra rain, 2 km blocks", fontsize=7, color=INK)
-    cax.text(0.5, 3.0, f"Perfect model has typical error of ~{floor:.0f}% due to interyear noise", transform=cax.transAxes, ha="center", va="center", fontsize=7, color=MUTED)
+    cax.text(0.5, 3.0, f"Even the true sensitivities would show ~{floor:.0f}% typical error, from year-to-year noise", transform=cax.transAxes, ha="center", va="center", fontsize=7, color=MUTED)
     fig.suptitle("How much greener does each place get per 100 mm of extra rain?  Box A", x=0.125, ha="left", y=1.04,
                  fontsize=9.5, fontweight="bold", color=INK)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)

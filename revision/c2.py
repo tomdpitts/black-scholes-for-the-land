@@ -7,6 +7,8 @@ Protocol: runs/20261022_1639_suite/PREREG.md, section "Chronos-2 protocol". Runs
   .venv-chronos/bin/python revision/c2.py world <out> --L 96 [--seasons k]
                                                                     -> c2_world.npz    test 2, the Chronos-2 world
   .venv-chronos/bin/python revision/c2.py drought <out> [--px n]    -> c2_drought.npz  test 3, season-end maps
+  .venv-chronos/bin/python revision/c2.py drought0 <out> <plan dir> [--px n]
+                                                                    -> c2_drought0.npz test 3, zero-residual split
   .venv-chronos/bin/python revision/c2.py sens <out> [--fd]         -> c2_sens.npz     test 4, Delta on the sample
   .venv-chronos/bin/python revision/c2.py cost <out> <plan dir>     -> c2_cost.json    CPU cost, GPU estimate
 --seasons k, --px n: the first k seasons / n sample pixels (debug only).
@@ -248,6 +250,27 @@ def drought(out, n=None):
     print("wrote", f"{out}/c2_drought.npz")
 
 
+def drought0(out, plan, n=None):
+    """As drought, the four weather combinations as median paths (percentile 50 at every step), so the split is
+    baseline (normal weather) + rain + demand (Shapley) + residual (observed - F0), each a direct run."""
+    P, eng = get_plan(plan), Chronos2()
+    t0 = int(P["t0_2022"])
+    d, a, cov = box_series("A")
+    px = np.arange(N * N) if n is None else P["px"][:n]
+    a, cov = a[px], cov[px]
+    y, fc = a[:, t0 + 1:t0 + 1 + H], cov[:, :, t0 + 1:t0 + 1 + H]
+    z0 = np.zeros((len(px), H))
+    nr, nt = fc.copy(), fc.copy()
+    nr[:, 0], nt[:, 1] = 0, 0
+    M, t1 = {"obs": y[:, -1]}, time.time()
+    for k, f in (("F0", fc), ("cf_r0", nr), ("cf_t0", nt), ("cf_rt0", np.zeros_like(fc))):
+        M[k] = roll(eng, a, cov, t0, z0, f)[:, -1]
+        print(f"{k}: {time.time() - t1:.0f} s", flush=True)
+    os.makedirs(out, exist_ok=True)
+    np.savez(f"{out}/c2_drought0.npz", px=px, t0=t0, name=P["name_2022"], device=eng.dev, **M)
+    print("wrote", f"{out}/c2_drought0.npz")
+
+
 def sens(out, fd=False):
     P, eng, res = get_plan(out), Chronos2(), {"method": "autodiff"}
     for box in "AB":
@@ -372,4 +395,4 @@ if __name__ == "__main__":
     cmd, out = sys.argv[1], sys.argv[2]
     {"check": lambda: check(out), "skill": lambda: skill(out), "world": lambda: world(out, arg("--L"), arg("--seasons")),
      "drought": lambda: drought(out, arg("--px")), "sens": lambda: sens(out, "--fd" in sys.argv),
-     "cost": lambda: cost(out, sys.argv[3])}[cmd]()
+     "cost": lambda: cost(out, sys.argv[3]), "drought0": lambda: drought0(out, sys.argv[3], arg("--px"))}[cmd]()

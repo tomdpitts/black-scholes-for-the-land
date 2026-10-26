@@ -6,7 +6,7 @@ M2 (refit), M3 (+ topography), M4 (+ evaporative demand): 5-seed means of single
 5-seed ensemble (its 1-step rollout skill), runs/20261021_0147_m3/gpu.
 Box B column is 2019-25 only (unseen landscape and unseen years): M1, M1.5, M2 rain removed re-scored from the
 fair-fight fits (runs/20261021_0147_m3/onestep_B_test_paper_models.json); trees from metrics_gbm_B_test.json.
-Chronos-2 rows (zero-shot, history only / given rain and ET0): runs/20261022_1639_suite/tables.md, scored on the suite's
+Chronos-2 row (zero-shot, given rain and ET0): runs/20261022_1639_suite/tables.md, scored on the suite's
 4,000-pixel samples (M4 ensemble on the same pixels: 0.109 / 0.130).
 3-month version (chronos2_3m), rows with both boxes saved: M1 Box A from the fair-fight metrics.json, Box B from
 runs/20261022_1639_suite/tables.md (same M1 fit); trees, M2-M4 and the ensemble from runs/20261021_0147_m3/RESULT.md;
@@ -41,13 +41,12 @@ ROWS = [
     ("M4 (inc. evaporative demand)", 0.103, 0.112),
     ("M4 5-seed ensemble (ours)", 0.111, 0.131),
 ]
-C2 = [("Chronos-2, history only", -0.034, -0.024), ("Chronos-2 (inc. rain & evap.)", 0.058, 0.071)]
+C2 = [("Chronos-2 (inc. rain & evap.)", 0.058, 0.071)]
 ROWS_C2 = ROWS[:4] + C2 + ROWS[4:]  # the zero-shot model beside the other outside baselines
 ROWS_3M = [
     ("M0, history only", 0.000, 0.000),
     ("M1, linear rain", 0.107, 0.099),
     ("Gradient-boosted trees", 0.222, 0.197),
-    ("Chronos-2, history only", 0.052, 0.082),
     ("Chronos-2 (inc. rain & evap.)", 0.271, 0.284),
     ("M2, rain removed", -0.005, -0.048),
     ("M2, learned", 0.241, 0.177),
@@ -94,8 +93,8 @@ if __name__ == "__main__":
     import sys
     os.makedirs("paper/figs/chronos2", exist_ok=True)
     if "chronos2_3m" in sys.argv:
-        chart("paper/figs/chronos2/fig_3month_skill_c2.png", ROWS_3M, x0=-10, figsize=(6.4, 5.0), text=THREE)
+        chart("paper/figs/chronos2/fig_3month_skill_c2.png", ROWS_3M, x0=-10, figsize=(6.4, 4.6), text=THREE)
     elif "chronos2" in sys.argv:
-        chart("paper/figs/chronos2/fig_onestep_skill_c2.png", ROWS_C2, x0=-6, figsize=(6.4, 5.4))
+        chart("paper/figs/chronos2/fig_onestep_skill_c2.png", ROWS_C2, figsize=(6.4, 5.1))
     else:
         chart("paper/figs/fig_onestep_skill.png")

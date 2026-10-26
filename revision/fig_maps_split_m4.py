@@ -1,10 +1,11 @@
 """Box A, March-May 2022 with M4 (5-seed ensemble): the season-end anomaly split into maps that add up,
 next to the terrain that shapes them.
 
-Per pixel at season end, NDVI units, averaged over the fits:
-  rain, evaporative demand   Shapley over the two forcings, residual held fixed (m3_attribution.py)
-  residual                   observed - expected (the weather that fell, residual zero)
-  baseline                   observed - rain - demand - residual (the late-Feb state run on under normal weather)
+Per pixel at season end, NDVI units, averaged over the fits; every run from the late-Feb state, residual zero:
+  baseline                   the run under normal weather
+  rain, evaporative demand   Shapley over the two forcings (the four weather combinations)
+  residual                   observed - the run under the weather that fell
+Baseline + rain + demand = that run, so the four add up to observed exactly.
 Averaged to 8x8-pixel blocks (~2.2 km), as fig_maps_split.py. Residual blocks inside their own 5-95% range
 over the 2003-17 long-rains seasons are faded. Elevation (Copernicus DEM GLO-30) is an input, not a share.
 
@@ -27,7 +28,7 @@ from run import H  # noqa: E402
 from residual import season_starts  # noqa: E402
 from fig_maps_split import blocks, INK, MUTED, SURF  # noqa: E402  (also sets the Open Sans fonts)
 import m3  # noqa: E402
-from m3_attribution import rerun, implied  # noqa: E402
+from m3_attribution import rerun  # noqa: E402
 
 R, CONFIG, SEEDS = "runs/20261021_0147_m3/gpu", "topo_pet", range(5)
 OUT = "paper/figs/candidates/fig_maps_split_2022_m4"
@@ -41,18 +42,17 @@ def main():
     train = [t for (y, sn, t) in season_starts(d, aoi.TRAIN_YEARS) if sn == "MAM"]
 
     def season(p, w, t):
-        """Season-end maps: observed, rain, demand, residual."""
+        """Season-end maps: observed, baseline, rain, demand, residual."""
         sl = slice(t + 1, t + 1 + H)
         a0, y = D["a"][t], D["a"][sl]
         r, rc, ex, ph = D["r"][sl], D["rclim"][sl], D["ex"][sl], D["phase"][sl]
-        eps, _ = implied(p, s, a0, w[t], y, r, ex, ph)
-        end = lambda rr, ee, e: np.asarray(rerun(p, s, a0, w[t], rr, ee, ph, e)[-1])
+        e0 = jnp.zeros(y.shape)
+        end = lambda rr, ee: np.asarray(rerun(p, s, a0, w[t], rr, ee, ph, e0)[-1])
         ex0 = jnp.zeros_like(ex)
-        obs, cf_r, cf_t, cf_rt = np.asarray(y[-1]), end(rc, ex, eps), end(r, ex0, eps), end(rc, ex0, eps)
-        rain = 0.5 * ((obs - cf_r) + (cf_t - cf_rt))
-        demand = 0.5 * ((obs - cf_t) + (cf_r - cf_rt))
-        resid = obs - end(r, ex, jnp.zeros_like(eps))
-        return obs, rain, demand, resid
+        obs, F, cf_r, cf_t, cf_rt = np.asarray(y[-1]), end(r, ex), end(rc, ex), end(r, ex0), end(rc, ex0)
+        rain = 0.5 * ((F - cf_r) + (cf_t - cf_rt))
+        demand = 0.5 * ((F - cf_t) + (cf_r - cf_rt))
+        return obs, cf_rt, rain, demand, obs - F
 
     ok = d["obs"][t0 + H].astype(bool)
     per_fit, ordinary = [], []
@@ -60,10 +60,8 @@ def main():
         p = {kk: jnp.asarray(v) for kk, v in np.load(f"{R}/params_{CONFIG}_s{k}.npy", allow_pickle=True).item().items()}
         w = m3.w_path(p, D)
         per_fit.append(season(p, w, t0))
-        ordinary.append([blocks(season(p, w, t)[3], d["obs"][t + H].astype(bool)) for t in train])
-    obs, rain, demand, resid = (np.mean(z, 0) for z in zip(*per_fit))
-    carried = obs - rain - demand - resid
-    maps = [blocks(m, ok) for m in (obs, carried, rain, demand, resid)]
+        ordinary.append([blocks(season(p, w, t)[4], d["obs"][t + H].astype(bool)) for t in train])
+    maps = [blocks(np.mean(z, 0), ok) for z in zip(*per_fit)]
     Rr = np.mean(ordinary, 0)                                  # [season, block, block], fit-averaged
     lo, hi = np.nanpercentile(Rr, 5, 0), np.nanpercentile(Rr, 95, 0)
     unusual = (maps[4] < lo) | (maps[4] > hi)
