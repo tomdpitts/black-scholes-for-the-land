@@ -4,8 +4,10 @@ As fig_attribution.py, with M4 in place of M2 and a fourth share. Lines: history
 the weather that fell (ensemble mean of the fits' rollouts, residual zero), observed; box means. Band: 90%
 range of the same rollout with whole residual maps re-injected, each draw taking a random fit and, per step,
 that fit's residual map from the same step of a random March-May season in 2003-2017. Bar: the season-end
-anomaly split into starting deficit, rain, evaporative demand (Shapley over the two forcings, residual held
-fixed) and residual, averaged over the fits.
+anomaly split as fig_maps_split_m4.py, averaged over the fits; every run from the late-Feb state, residual zero:
+  baseline                   the run under normal weather
+  rain, evaporative demand   Shapley over the two forcings (the four weather combinations)
+  residual                   observed - the run under the weather that fell
 
   .venv/bin/python revision/fig_attribution_m4.py   -> paper/figs/candidates/fig_2022_attribution_m4.png
 """
@@ -49,14 +51,14 @@ def main():
     for k in SEEDS:
         p = {kk: jnp.asarray(v) for kk, v in np.load(f"{R}/params_{CONFIG}_s{k}.npy", allow_pickle=True).item().items()}
         w = m3.w_path(p, D)
-        eps, _ = implied(p, s, a0, w[t0], y, r, ex, ph)
-        run = lambda rr, ee, e: bm(rerun(p, s, a0, w[t0], rr, ee, ph, e))[-1]
-        obs, cf_r, cf_t, cf_rt = run(r, ex, eps), run(rc, ex, eps), run(r, ex0, eps), run(rc, ex0, eps)
-        expected = bm(rerun(p, s, a0, w[t0], r, ex, ph, jnp.zeros_like(eps)))
-        rain = 0.5 * ((obs - cf_r) + (cf_t - cf_rt))
-        demand = 0.5 * ((obs - cf_t) + (cf_r - cf_rt))
-        resid = obs - expected[-1]
-        parts.append((obs - rain - demand - resid, rain, demand, resid))
+        zero = jnp.zeros_like(y)
+        run = lambda rr, ee: bm(rerun(p, s, a0, w[t0], rr, ee, ph, zero))
+        expected = run(r, ex)
+        F, cf_r, cf_t, cf_rt = expected[-1], run(rc, ex)[-1], run(r, ex0)[-1], run(rc, ex0)[-1]
+        rain = 0.5 * ((F - cf_r) + (cf_t - cf_rt))
+        demand = 0.5 * ((F - cf_t) + (cf_r - cf_rt))
+        resid = bm(y)[-1] - F
+        parts.append((cf_rt, rain, demand, resid))
         E = np.stack([np.asarray(implied(p, s, D["a"][t], w[t], D["a"][t + 1:t + 1 + H], D["r"][t + 1:t + 1 + H],
                                          D["ex"][t + 1:t + 1 + H], D["phase"][t + 1:t + 1 + H])[0]) for t in train])
         fits.append((p, w, expected, E))
@@ -83,7 +85,7 @@ def main():
     rain_mm = float((r - rc).mean((1, 2)).sum() * 100)
     pet_mm = float(ex.mean((1, 2, 3)).sum() * 100)
     print(f"MAM2022: obs {obs[-1]:+.3f}  expected {expected[-1]:+.3f}  history {hist[-1]:+.3f}  rain {rain_mm:+.0f} mm  demand {pet_mm:+.0f} mm")
-    print(f"split (mean of {len(fits)} fits): start {start:+.3f}  rain {rain:+.3f}  demand {demand:+.3f}  residual {resid:+.3f}")
+    print(f"split (mean of {len(fits)} fits): baseline {start:+.3f}  rain {rain:+.3f}  demand {demand:+.3f}  residual {resid:+.3f}")
 
     plt.rcParams.update({"font.size": 8})
     hh = np.arange(H + 1) * 16
@@ -96,7 +98,7 @@ def main():
             a.spines[sp].set_visible(False)
     ax.axhline(0, color=LIGHT, lw=0.8)
     ax.fill_between(hh, lo, hi, color=BLUE, alpha=0.14, lw=0, label="90% range: same weather, ordinary-year residuals")
-    ax.plot(hh, hist, "--", color=GREY, lw=1.4, label="history alone")
+    ax.plot(hh, hist, "--", color=GREY, lw=1.4, label="M0 (history alone)")
     ax.plot(hh, expected, "-", color=BLUE, lw=2, label="expected from the weather that fell")
     ax.plot(hh, obs, "o-", color=INK, lw=2, ms=4.5, mec="white", mew=0.8, label="observed", zorder=5)
     ax.set_xlim(-3, 100); ax.set_ylim(-0.2, 0.03); ax.set_xticks(hh)
@@ -105,12 +107,12 @@ def main():
                  fontsize=8.5, loc="left")
     ax.grid(axis="y", color="#ececea", lw=0.6); ax.set_axisbelow(True)
     kw = dict(fontsize=7.5, ha="right")
-    ax.text(95, hist[-1] + 0.007, f"history alone {hist[-1]:+.2f}", color=MUTED, **kw)
+    ax.text(95, hist[-1] + 0.007, f"M0 (history alone) {hist[-1]:+.2f}", color=MUTED, **kw)
     ax.text(95, expected[-1] + 0.007, f"expected from weather {expected[-1]:+.2f}", color=INK, **kw)
     ax.text(95, obs[-1] - 0.016, f"observed {obs[-1]:+.2f}", color=INK, fontweight="bold", **kw)
     ax.legend(loc="lower left", fontsize=6.8, frameon=False, handlelength=1.8)
     top, segs = 0.0, []
-    for v, col, lab in ((start, LIGHT, "starting deficit"), (rain, BLUE, "rain"),
+    for v, col, lab in ((start, LIGHT, "baseline,\nnormal weather"), (rain, BLUE, "rain"),
                         (demand, YELLOW, "evaporative\ndemand"), (resid, ORANGE, "not explained\nby weather")):
         segs.append((top, top + v, col, lab))
         top += v
