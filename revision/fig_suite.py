@@ -103,7 +103,7 @@ def fig_skill(R):
     ax.get_yticklabels()[5].set_fontweight("bold")
     ax.set_xlim(0, 0.34)
     frame(ax, "3-month skill vs history alone (0 = no better); M2, M3: mean and range of 5 fits",
-          "Test 1. Skill three months ahead on unseen years")
+          "Skill three months ahead on unseen years")
     ax.legend(loc="lower right", fontsize=7, frameon=False)
     save(fig, R, "fig_suite_skill")
 
