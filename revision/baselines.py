@@ -6,6 +6,8 @@ Same splits, masks and scores as run.py; M0 and M2 reference numbers from the fa
 
   .venv/bin/python revision/baselines.py gbm   -> runs/20261006_1759_baselines/metrics_gbm.json
   .venv/bin/python revision/baselines.py gru   -> runs/20261006_1759_baselines/metrics_gru.json
+  .venv/bin/python revision/baselines.py gbm_full <out dir> <set> ...   B1 with M4's inputs: + ET0 anomaly lags and
+      topography (runs/20261027_1637_gbm_full/PREREG.md) -> <out dir>/metrics_gbm_full_<sets>.json
 """
 import json
 import os
@@ -82,9 +84,11 @@ def gbm_features(a_lags, n, D, t_next, x):
     T = D["r"].shape[0]
     cols = [al for al in a_lags] + [n]
     cols += [np.broadcast_to(D["phase"][t_next][k], shape) for k in range(2)]
-    cols += [np.broadcast_to(x[..., k], shape) for k in range(3)]
+    cols += [np.broadcast_to(x[..., k], shape) for k in range(x.shape[-1])]
     cols += [np.broadcast_to(D["r"][min(max(t_next - L, 0), T - 1)], shape) for L in range(LAGS_R)]
     cols += [np.broadcast_to(D["rclim"][t_next], shape)]
+    if "ed" in D:  # gbm_full: ET0 anomaly over the same six windows as the rain
+        cols += [np.broadcast_to(D["ed"][min(max(t_next - L, 0), T - 1)], shape) for L in range(LAGS_R)]
     return np.stack([c.reshape(-1) for c in cols], 1).astype(np.float32)
 
 
@@ -130,10 +134,22 @@ def fit_gbm(A):
                      "var_scale": c}
 
 
-def gbm(sets=("A_test", "B_all"), out=None):
+def load_full(box):
+    """built.npz plus M4's other inputs, raw: traits x [N,N,6] (+ elevation, slope, topographic position) and the
+    ET0 anomaly ed [T,N,N] (100 mm per window)."""
+    d = load(box)
+    t, e = np.load(f"data/{box}/topo.npz"), np.load(f"data/{box}/era5.npz")
+    assert (e["dates"] == d["dates"]).all()
+    d["x"] = np.concatenate([d["x"], np.stack([t[k] for k in ("elev", "slope", "tpi")], -1)], -1).astype(np.float32)
+    d["ed"] = (e["pet"] - e["pet_clim"]).astype(np.float32)
+    return d
+
+
+def gbm(sets=("A_test", "B_all"), out=None, full=False):
     """Default: the pre-registered sets, summarised against the fair-fight M0. With `out`, the given
-    sets' raw CRPS go to <out>/metrics_gbm_<sets>.json (skill is computed against that run's M0)."""
-    A, B = load("A"), load("B")
+    sets' raw CRPS go to <out>/metrics_gbm[_full]_<sets>.json (skill is computed against that run's M0).
+    full: M4's inputs (load_full)."""
+    A, B = (load_full("A"), load_full("B")) if full else (load("A"), load("B"))
     N = A["a"].shape[1]
     predict, fit_info = fit_gbm(A)
     res = {}
@@ -173,7 +189,7 @@ def gbm(sets=("A_test", "B_all"), out=None):
                 log(f"  {es} rollout {k}/{len(st)} {time.time() - t0:.0f}s")
         res[es] = {"onestep_crps": one, "rollout_crps": (rnum / rden).tolist()}
     if out:
-        path = f"{out}/metrics_gbm_{'_'.join(sets)}.json"
+        path = f"{out}/metrics_gbm{'_full' if full else ''}_{'_'.join(sets)}.json"
         json.dump({**res, "fit": fit_info}, open(path, "w"), indent=1)
         log(f"wrote {path}")
         return
@@ -339,7 +355,7 @@ def gru():
 
 
 if __name__ == "__main__":
-    if sys.argv[1] == "gbm" and len(sys.argv) > 2:  # baselines.py gbm <out dir> <set> ...
-        gbm(tuple(sys.argv[3:]), sys.argv[2])
+    if sys.argv[1] in ("gbm", "gbm_full") and len(sys.argv) > 2:  # baselines.py gbm[_full] <out dir> <set> ...
+        gbm(tuple(sys.argv[3:]), sys.argv[2], full=sys.argv[1] == "gbm_full")
     else:
         {"gbm": gbm, "gru": gru}[sys.argv[1]]()

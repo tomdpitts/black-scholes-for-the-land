@@ -21,6 +21,7 @@
 \title{Black--Scholes for the Land:\\ Modelling Savannah Response to Rain as a Dynamic World Model}
 \author{
     Thomas Pitts\textsuperscript{\rm 1},
+    Yu Lao\textsuperscript{\rm 2},
     Zhiyong Wang\textsuperscript{\rm 2}
 }
 \affiliations{
@@ -33,7 +34,7 @@
 \maketitle
 
 \begin{abstract}
-Carbon credits, offsets and index insurance rest on counterfactuals: what the land would have done under the same weather without management, or what a bad season cost. Current baselines fail in two ways: some ignore rain, others condition on rain linearly and annually. But the true response lags the water supply, depends on hidden state such as stored water, and responds differently from pixel to pixel. Focussing on grassland pasture and its climatic water balance as a proof of concept, we fit a temporal world model of MODIS greenness conditioned on CHIRPS rain and ERA5 evaporative demand (ED) over two $45\times45$\,km regions in Laikipia, Kenya: a transition density for greenness given recent and current weather. We use it, conceptually, as Black--Scholes is used. Inverted on observed greenness, the model yields an implied residual, everything the land did that the weather does not explain. Two capabilities drop out of this solution: 1) attribution, what the land did beyond the weather; 2) sensitivities, derivatives of the rollout with respect to rain and state, close analogues of the Greeks. On Laikipia test sites, our learned model recovers three-month greenness with $27\%$ less error than a history-only baseline and $12\%$ less than RESTREND, the standard research method, on unseen years. In the 2022 drought the land ended $0.17$ NDVI below normal. The weather accounts for $0.10$ of that, $0.06$ from failed rain and $0.04$ from excess ED, and the residual for $0.06$. Under normal weather it would have ended $0.01$ below. $\Delta$, the derivative of greenness with respect to rain, is computed at every pixel and averages $0.072$ NDVI a month after an extra $100$\,mm of rain. A $\Delta$ at every pixel is an exposure to rain that can be hedged, allowing efficient pricing of contracts and accurate attribution. The deep learning approach we describe here could furthermore be used with other inputs beyond the weather to derive yet more fine-grained attribution and sensitivities.
+Carbon credits and index insurance for grazing rest on counterfactuals, and both need to separate what the weather did to the land from what its managers did. Incumbent baselines either ignore rain, scoring greenness against the pixel's own history, or regress on annual rainfall. We fit a small probabilistic world model of MODIS greenness conditioned on CHIRPS rain and ERA5 evaporative demand over two $45\times45$\,km rangeland regions in Laikipia, Kenya, and use it, conceptually, as Black--Scholes is used: inverted on observed greenness it yields an implied residual, i.e. what the land did beyond the weather; rolled forward under other drivers it can generate counterfactuals; and differentiated with respect to its drivers and state it gives sensitivities, close analogues of the Black--Scholes Greeks. In the 2022 drought, a held-out year, the land ended $0.17$ NDVI below normal. The model attributes $0.10$ to the weather and $0.06$ to the residual, where the history score insurers use would assign all $0.17$ to the land. Swapping the model's backbone for Chronos-2, a 120M-parameter time-series foundation model, we also independently obtain an attribution of $0.10$. With 5,010 parameters it matches or beats Chronos-2's forecast skill, and splits the season in $0.07$\,s on a laptop CPU against $11$ minutes on an NVIDIA H100 GPU. Its sensitivities are the clearest gain. On unseen years, the $\Delta$ of our model (i.e. the derivative of greenness with respect to rain) has an error of $22\%$ on average across 2\,km blocks, close to the $19\%$ year-to-year noise floor, while Chronos-2's average $\Delta$ is $80\%$. Our invertible world model produces a decomposition of the land's change attribution, as well as quantifying exposure to rain at every pixel.
 \end{abstract}
 
 \section{Approach}
@@ -46,11 +47,6 @@ A Black-Scholes formula (BSF) model \citep{bs} is fed observables such as curren
 \caption{Box A, March--May 2022, a held-out year. Season-end NDVI anomaly per 2\,km block from M4. Every run starts from the late-February state with residual zero. The baseline is the run under normal weather. Rain and evaporative demand split the run under the weather that fell minus the baseline by Shapley value. The residual is observed minus that run. The four add to observed, with box means of $-0.01$, $-0.06$, $-0.04$ and $-0.06$ summing to $-0.17$. Elevation, left, is an input and not a share.}
 \label{fig:split}
 \end{figure*}
-
-\paragraph{Pixel characteristics}
-
-\paragraph{Residual} We use the term `residual' to encompass any deviation between the climate-adjusted modelled expectation and the observed ground truth. For clarity, this includes the impacts of all other factors such as grazing, clearing, and fire, the management and disturbance signal itself, but also any weather other than rain and ED, which this demonstration does not condition on, as well as noise in data sources. 
-
 
 \section{Related Work}
 Separating climate from land use in vegetation records is an old problem. Residual trend analysis (RESTREND) regresses annual or growing-season NDVI on accumulated rainfall and reads trends in the residual as human-induced degradation \citep{evans2004,wessels2007}; later variants find breakpoints in the residual trend \citep{burrell2017}, and vegetation sensitivity indices add a one-month memory term \citep{seddon2016}. These are linear in their drivers and fitted pixel by pixel at annual or monthly scale. M1 below is a 16-day version; M2 replaces the regression with a learned, state-dependent transition density shared across pixels. In East Africa, NDVI tracks the rain of the current and two preceding months, with a response that has been found to flatten in wetter areas \citep{nicholson1990,davenport1993}. Operational drought monitoring and livestock insurance in Kenya score NDVI against the pixel's own history \citep{kogan1990,klisch2016,vrieling2014,ibli} i.e. the history-only baseline M0. Deep temporal models conditioned on weather already predict crop yield \citep{shook2021}; probabilistic deep forecasters and time-series foundation models output predictive densities \citep{salinas2020,rasul2023,ansari2024}, and one has forecast leaf area index zero-shot \citep{zhang2025}. To the best of our knowledge, none are built to be inverted on observations or re-run under another driver path.
@@ -65,20 +61,25 @@ a_{t+1} &= a_t + \mu_\theta(a_t, \bar a_t, w_t, u_{t+1}, \phi_{t+1}, x) \nonumbe
 &\quad + \sigma_\theta(\cdot)\,\varepsilon_t,\qquad \varepsilon_t\sim\mathcal N(0,1),
 \label{eq:model}
 \end{align}
-where $t$ indexes 16-day steps, $\bar a_t$ is the $5\times5$ neighbourhood mean of $a_t$, $\phi_{t+1}$ is the seasonal phase (sine and cosine of day of year), $x$ is six static traits of the pixel: mean NDVI, seasonal amplitude, climatological annual rain, and elevation, slope and topographic position from the Copernicus GLO-30 DEM \citep{copdem}, and $u_t=r_t-k(x)\,e_t$ is rain net of ED, the climatic water balance \citep{spei}, with $k$ linear in the traits. $w_t$ is a decaying sum of past $u_t$ that keeps a fraction $\lambda(x)=\mathrm{sigmoid}(c_0+c^\top x)$ each step. $\mu_\theta$ is the expected change in the anomaly and $\sigma_\theta$ its spread, both functions of the same six inputs, so $p_\theta(a_{t+1}\mid\cdot)=\mathcal N(a_t+\mu_\theta,\sigma_\theta^2)$; $\theta$ is one set of weights shared by every pixel. \textbf{M0} uses history alone. \textbf{M1} has $\mu$ and $\log\sigma$ linear in the features. \textbf{M1.5} adds a hand-written S-curve in $w_t+r_{t+1}$, six parameters. \textbf{M2} adds a 64-unit one-hidden-layer network to $\mu$ and $\log\sigma$. \textbf{M3} adds the topographic traits. \textbf{M4} adds ED ($k=0$ below M4) and is an equal-weight mixture of five fits. All are fitted by full-batch Adam \citep{kingma2015} on the one-step Gaussian log-likelihood of observed transitions.
+where $t$ indexes 16-day steps, $\bar a_t$ is the $5\times5$ neighbourhood mean of $a_t$, $\phi_{t+1}$ is the seasonal phase (sine and cosine of day of year), $x$ is six static traits of the pixel: mean NDVI, seasonal amplitude, climatological annual rain, and elevation, slope and topographic position from the Copernicus GLO-30 DEM \citep{copdem}, and $u_t=r_t-k(x)\,e_t$ is rain net of ED, the climatic water balance \citep{spei}, with $k$ linear in the traits. $w_t$ is a decaying sum of past $u_t$ that keeps a fraction $\lambda(x)=\mathrm{sigmoid}(c_0+c^\top x)$ each step. $\mu_\theta$ is the expected change in the anomaly and $\sigma_\theta$ its spread, both functions of the same six inputs, so $p_\theta(a_{t+1}\mid\cdot)=\mathcal N(a_t+\mu_\theta,\sigma_\theta^2)$; $\theta$ is one set of weights shared by every pixel. \textbf{M0} uses history alone. \textbf{M1} has $\mu$ and $\log\sigma$ linear in the features. \textbf{M1.5} adds a hand-written S-curve in $w_t+r_{t+1}$, six parameters. \textbf{M2} adds a 64-unit one-hidden-layer network to $\mu$ and $\log\sigma$. \textbf{M3} adds the topographic traits to an \textbf{M2} model. \textbf{M4} adds ED ($k=0$ below M4) to an \textbf{M3} and is an equal-weight mixture of five fits. All are fitted by full-batch Adam \citep{kingma2015} on the one-step Gaussian log-likelihood of observed transitions.
 
 \paragraph{Residual} Inverting \eqref{eq:model} on an observed transition gives the implied (standardised) residual,
 \begin{equation}
 \hat\varepsilon_t = \frac{a_{t+1} - a_t - \mu_\theta(a_t,\bar a_t,w_t,u_{t+1},\phi_{t+1},x)}{\sigma_\theta(\cdot)},
 \label{eq:implied}
 \end{equation}
-one number per pixel per 16 days, in units of the model's own spread. Accumulated over a season it is the attribution product: $a_{t+h}-F_h$, where $F_h=\mathbb E[a_{t+h}]$ is the mean rollout along the observed rain and ED, with the model's spread as its interval. Rolling \eqref{eq:model} forward from the same state with zero residual along a weather path $(r',e')$, $u'=r'-k(x)\,e'$, gives $F_h(r',e')$. With $(\bar r,0)$ the climatological rain and zero ED anomaly, the season-end anomaly splits exactly into baseline, weather and residual,
+which in practical terms is one number per pixel per 16 days, in units of the model's predicted standard deviation, $\sigma_\theta$. Carried through the rollout, these residuals make up the season's residual term, $a_{t+h}-F_h$. Here $F_h(r',e')$ is \eqref{eq:model} rolled forward from the season's starting state with zero residual along a weather path $(r',e')$, $u'=r'-k(x)\,e'$, and $F_h=F_h(r,e)$ follows the observed rain and ED. Its interval comes from re-running the season with residuals resampled from the training seasons. With $(\bar r,0)$ the climatological rain and zero ED anomaly, the season-end anomaly splits exactly into baseline, weather and residual, 
+
 \begin{equation}
 a_{t+h}=F_h(\bar r,0)+\big[F_h(r,e)-F_h(\bar r,0)\big]+\big[a_{t+h}-F_h(r,e)\big].
 \label{eq:split}
 \end{equation}
 The weather term is divided between rain and ED by Shapley value over the four combinations of observed and normal rain and ED \citep{shapley1953}. Sensitivities (following BSF Greeks) are Jacobian-vector products through the rollout: $\Delta_h=\partial F_h/\partial r_{t+1}$, greenness $h$ steps ahead per $100$\,mm of rain now; $\Theta_h=\partial F_h/\partial a_t$, how much of today's anomaly survives.
-\paragraph{Evaluation} Error is the continuous ranked probability score (CRPS) \citep{gneiting2007}, the probabilistic generalisation of absolute error, on observed held-out pixel-steps (one pixel at one 16-day composite); skill is $1-\mathrm{CRPS}/\mathrm{CRPS}_{\mathrm{M0}}$. Each model is scored one step (16 days) ahead, and rolled forward three months along the observed weather. As the canonical machine-learning baseline we also fit gradient-boosted trees \citep{friedman2001} on recent greenness, rain and the pixel's traits. 
+
+N.B. by this formulation we use the term `residual' to encompass any deviation between the climate-adjusted modelled expectation and the observed ground truth. For clarity, this includes the impacts of all other factors such as grazing, clearing, and fire, the management and disturbance signal itself, but also any weather other than rain and ED, which this demonstration does not condition on, as well as noise in data sources.
+
+
+\paragraph{Evaluation} Error is the continuous ranked probability score (CRPS) \citep{gneiting2007}, the probabilistic generalisation of absolute error, on observed held-out pixel-steps (one pixel at one 16-day composite); skill is $1-\mathrm{CRPS}/\mathrm{CRPS}_{\mathrm{M0}}$. Each model is scored one step (16 days) ahead, and rolled forward three months along the observed weather. As the canonical machine-learning baseline we also fit gradient-boosted trees \citep{friedman2001} on recent greenness, rain, ED and the pixel's traits, including topography. We also compare our model to Amazon's Chronos-2, a time-series foundation model that we present as representative of current SOTA foundation models. 
 
 \section{Results}
 \begin{figure*}[t]
@@ -107,6 +108,26 @@ B, unseen land & $.092$ & $.076$ & $.111$ & $.062/.083/.098$ & $.018$ & $[-.046,
 \end{figure}
 
 \textbf{$\Delta$ -- } On the grid mean an extra $100$\,mm of rain raises greenness by $0.072$ NDVI a month later. Recomputed from the current state at each rainy-season step, $\Delta$ sorts exposure well on unseen years. Sorted by $\Delta$, the top third of patches green about three times as much per $100$\,mm as the least (Table~\ref{tab:greeks}). On the unseen landscape the ranking does not hold, within pixels or across them (Table~\ref{tab:greekstests}).
+
+\begin{table}[t]\centering\footnotesize
+\caption{Error of the Greeks' explain against the full rollout's weather term, M4, Box A held-out seasons without a MODIS gap, season-end box mean. Droughts use $\Delta$ alone \eqref{eq:explain}; seasons more than $100$\,mm wetter than normal add $\Gamma$.}\label{tab:explain}
+\begin{tabular}{lc@{\hspace{1.5em}}lc}\toprule
+\multicolumn{2}{c}{Droughts, $\Delta$} & \multicolumn{2}{c}{Wet, $\Delta+\Gamma$}\\
+\cmidrule(r{1em}){1-2}\cmidrule{3-4}
+Season & Error & Season & Error\\\midrule
+MAM 2019 & $1\%$ & OND 2019 & $0\%$\\
+OND 2020 & $0\%$ & MAM 2020 & $3\%$\\
+MAM 2022 & $5\%$ & OND 2023 & $4\%$\\
+OND 2022 & $8\%$ & MAM 2024 & $2\%$\\\bottomrule
+\end{tabular}
+\end{table}
+
+To first order the weather term of \eqref{eq:split} is the sensitivities times the weather,
+\begin{equation}
+F_h(r,e)-F_h(\bar r,0)\approx\textstyle\sum_s \Delta^{r}_{h,s}\,\delta r_s+\sum_s \Delta^{e}_{h,s}\,\delta e_s,
+\label{eq:explain}
+\end{equation}
+where $\delta r_s,\delta e_s$ are the departures of rain and ED from normal in window $s$ and $\Delta_{h,s}=\partial F_h/\partial(\cdot)_s$ is taken at normal weather from the pre-season state. In every held-out drought it is within $8\%$ of the full rollout (Table~\ref{tab:explain}). Because $\Delta$ is computed before the season, an insurer can fix an area's drought payout in advance as the rain and ED abnormalities weighted by $\Delta$, which can be checked without running the model. In wet seasons greenness saturates, and a second-order Greek $\Gamma=\partial^2F_h/\partial r^2$, is needed: $\Gamma<0$ in every held-out season, and with it the explain is within $4\%$ in every season more than $100$\,mm wetter than normal (Table~\ref{tab:explain}). Together, \eqref{eq:split} and \eqref{eq:explain} attribute the season-end anomaly in greenness to weather deviations weighted by $\Delta$. $\Delta$ also enables a hedging strategy: a carbon project can offset its exposure to rain with a rainfall index contract covering $\Delta$ per $100$\,mm of shortfall, leaving it exposed only to the residual. 
 
 \textbf{$\Theta$ and $\partial\sigma/\partial r$ -- } The same rollout gives how fast a shock to greenness decays and how much rain widens the spread of outcomes. We leave both to future work.
 

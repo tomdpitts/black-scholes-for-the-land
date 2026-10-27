@@ -51,7 +51,7 @@
 Model & 16 days & 3 months & 16 days & 3 months\\\midrule
 M0 history only & 0.000 & 0.000 & 0.000 & 0.000\\
 RESTREND & -- & 0.170 & -- & 0.190\\
-Gradient-boosted trees & 0.046 & 0.222 & 0.003 & 0.197\\
+Gradient-boosted trees & 0.083 & 0.246 & 0.047 & 0.209\\
 M1 linear & 0.013 & 0.107 & 0.040 & 0.099\\
 M2 learned & 0.092 & 0.241 & 0.075 & 0.177\\
 M3 with topography & 0.099 & 0.254 & 0.083 & 0.204\\
@@ -72,6 +72,6 @@ G1, also given evaporative demand & $+.046$ $[+.015, +.065]$ pass & $-.027$ $[-.
 G2, across pixels & $+.078$ $[+.054, +.105]$ pass & $+.021$ $[-.037, +.082]$ fail\\\bottomrule
 \end{tabular}\end{table*}
 
-\paragraph{Fitting} We use full-batch Adam \citep{kingma2015} at a learning rate of $3\times10^{-3}$ for up to 2000 steps, keeping the parameters with the best 2018 log-likelihood; each step uses all $25\,600$ pixels and the $\sim340$ training-year transitions. Each M4 fit has 1,002 parameters, and the ensemble is the equal-weight mixture of five fits from different seeds. One fit takes about $2.5$ minutes on one H100 and $80$ on a laptop CPU, and GPU and CPU fits agree to about $0.005$ in skill. Jacobian-vector products of the mean rollout, computed in JAX \citep{jax2018}, agree with finite differences to $3\times10^{-4}$, against a $\Delta$ of order $10^{-2}$. Code and the run directory behind every number are in the supplementary repository.
+\paragraph{Fitting} We use full-batch Adam \citep{kingma2015} at a learning rate of $3\times10^{-3}$ for up to 2000 steps, keeping the parameters with the best 2018 log-likelihood; each step uses all $25\,600$ pixels and the $\sim340$ training-year transitions. Each M4 fit has 1,002 parameters, and the ensemble is the equal-weight mixture of five fits from different seeds. One fit takes about $2.5$ minutes on one H100 and $80$ on a laptop CPU, and GPU and CPU fits agree to about $0.005$ in skill. Jacobian-vector products of the rollout $F_h$, computed in JAX \citep{jax2018}, agree with finite differences to $3\times10^{-4}$, against a $\Delta$ of order $10^{-2}$. Code and the run directory behind every number are in the supplementary repository.
 \bibliography{references}
 \end{document}

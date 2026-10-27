@@ -73,9 +73,8 @@ def paired_bars(ax, labels, vals, lo=None, hi=None, series=("Box A, 2019–25", 
 def fig_skill(R):
     sk = json.load(open(f"{R}/skill.json"))
     sk1 = lambda es, n: 1 - sk[es]["all"][n]["rollout_crps"][-1] / sk[es]["all"]["M0"]["rollout_crps"][-1]
-    trees = (json.load(open("runs/20261006_1759_baselines/metrics_gbm.json"))["A_test"]["rollout_skill_vs_M0"][-1],
-             1 - json.load(open("runs/20261021_0147_m3/metrics_gbm_B_test.json"))["B_test"]["rollout_crps"][-1]
-             / sk["B_test"]["all"]["M0"]["rollout_crps"][-1])
+    g = json.load(open("runs/20261027_1637_gbm_full/metrics_gbm_full_A_test_B_test.json"))  # trees with M4's inputs
+    trees = tuple(1 - g[es]["rollout_crps"][-1] / sk[es]["all"]["M0"]["rollout_crps"][-1] for es in ("A_test", "B_test"))
     rows, lo, hi = [], [], []
     for lab, k in [("M1, linear rain", "M1"), ("RESTREND (per-pixel regression)", "RESTREND"), ("Gradient-boosted trees", None),
                    ("M2, learned", "M2"), ("M3 (+ topography)", "M3"),
