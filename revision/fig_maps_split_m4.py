@@ -99,7 +99,7 @@ def draw(maps, unusual, elev, means, rain_mm, pet_mm, who, out):
 
     ax = fig.add_subplot(gs[0, 0])
     ime = ax.imshow(elev * 1000, cmap="Greys", interpolation="nearest", extent=ext)
-    frame(ax, "Terrain", "input, not a share", f"{elev.min() * 1000:.0f}–{elev.max() * 1000:.0f} m")
+    frame(ax, "Terrain", "Input only", f"{elev.min() * 1000:.0f}–{elev.max() * 1000:.0f} m")
     px = 10 / (aoi.RES * 111.32)
     ax.plot([8, 8 + px], [150, 150], color="white", lw=1.6, solid_capstyle="butt")
     ax.text(8 + px / 2, 146, "10 km", ha="center", va="bottom", fontsize=6.5, color="white")
@@ -107,7 +107,7 @@ def draw(maps, unusual, elev, means, rain_mm, pet_mm, who, out):
     cb = fig.colorbar(ime, cax=cax, orientation="horizontal")
     cb.ax.tick_params(labelsize=5.5, length=2); cb.set_label("elevation, m", fontsize=6.5); cb.outline.set_linewidth(0.4)
 
-    titles = ["Observed", "Baseline", "Rain", "Evap. demand", "Residual"]
+    titles = ["Observed", "Baseline", "Rain", "ED", "Residual"]
     subs = ["end of May 2022", "under normal weather", f"{abs(rain_mm):.0f} mm below normal", f"{pet_mm:.0f} mm above normal", ""]
     kw = dict(cmap="BrBG", vmin=-0.3, vmax=0.3, interpolation="nearest", extent=ext)
     n = maps[0].shape[0]
@@ -124,7 +124,7 @@ def draw(maps, unusual, elev, means, rain_mm, pet_mm, who, out):
     cax = fig.add_subplot(gs[1, 3:10])
     cb = fig.colorbar(im, cax=cax, orientation="horizontal", ticks=[-0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3])
     cb.ax.tick_params(labelsize=6.5, length=2)
-    cb.set_label(f"NDVI anomaly at season end, 2 km blocks; {who}", fontsize=7, color=INK)
+    cb.set_label(f"NDVI anomaly at season end, 2.2 km blocks; {who}", fontsize=7, color=INK)
     cax.text(-0.02, 0.5, "browner", transform=cax.transAxes, ha="right", va="center", fontsize=7, color=INK)
     cax.text(1.02, 0.5, "greener", transform=cax.transAxes, ha="left", va="center", fontsize=7, color=INK)
     cb.outline.set_linewidth(0.4)

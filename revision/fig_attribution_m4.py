@@ -30,7 +30,7 @@ from m3_attribution import rerun, implied  # noqa: E402
 
 R, CONFIG, SEEDS = "runs/20261021_0147_m3/gpu", "topo_pet", range(5)
 REF = "runs/20260914_1708_pipeline_h100_fairfight"
-BLUE, ORANGE, YELLOW, GREY, INK, MUTED, LIGHT = "#2a78d6", "#eb6834", "#eda100", "#9a9891", "#0b0b0b", "#52514e", "#c3c2b7"
+BLUE, ORANGE, YELLOW, GREY, INK, MUTED, LIGHT = "#61adf2", "#ee814d", "#f7bc50", "#9c958a", "#2b2620", "#6b645a", "#cfc8bc"
 B, SEED = 500, 0
 OUT = "paper/figs/candidates/fig_2022_attribution_m4"
 
@@ -105,7 +105,7 @@ def main():
     ax.set_xlabel("days from season start"); ax.set_ylabel("NDVI anomaly, box mean (0 = normal)")
     ax.set_title(f"Box A, Mar–May 2022: rain {abs(rain_mm):.0f} mm below normal, evaporative demand {pet_mm:.0f} mm above",
                  fontsize=8.5, loc="left")
-    ax.grid(axis="y", color="#ececea", lw=0.6); ax.set_axisbelow(True)
+    ax.grid(axis="y", color="#ebe5da", lw=0.6); ax.set_axisbelow(True)
     kw = dict(fontsize=7.5, ha="right")
     ax.text(95, hist[-1] + 0.007, f"M0 (history alone) {hist[-1]:+.2f}", color=MUTED, **kw)
     ax.text(95, expected[-1] + 0.007, f"expected from weather {expected[-1]:+.2f}", color=INK, **kw)
@@ -113,7 +113,7 @@ def main():
     ax.legend(loc="lower left", fontsize=6.8, frameon=False, handlelength=1.8)
     top, segs = 0.0, []
     for v, col, lab in ((start, LIGHT, "baseline,\nnormal weather"), (rain, BLUE, "rain"),
-                        (demand, YELLOW, "evaporative\ndemand"), (resid, ORANGE, "not explained\nby weather")):
+                        (demand, YELLOW, "evaporative\ndemand"), (resid, ORANGE, "residual –\nnot explained\nby weather")):
         segs.append((top, top + v, col, lab))
         top += v
     for t_, b_, col, lab in segs:

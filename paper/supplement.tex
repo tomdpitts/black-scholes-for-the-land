@@ -20,7 +20,7 @@
 }
 \setcounter{secnumdepth}{0}
 
-\title{Black--Scholes for the Land:\\ Modelling Savannah Response to Rain as a Dynamic World Model\\ Appendix}
+\title{Black--Scholes for the Land:\\ Modelling Savanna Response to Rain as a Dynamic World Model\\ Appendix}
 \author{
     Thomas Pitts\textsuperscript{\rm 1},
     Zhiyong Wang\textsuperscript{\rm 2}
@@ -45,24 +45,28 @@
 \label{fig:map}
 \end{figure*}
 
-\begin{table}[t]\centering\caption{Skill on held-out years 2019--25, $1-\mathrm{CRPS}/\mathrm{CRPS}_{\mathrm{M0}}$, one step (16 days) and three months along the observed weather, on Box A and on Box B, the unseen landscape. M2 and M3 are means of five fits. RESTREND gives season-end values only.}\label{tab:onestep}\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{table}[t]\centering\caption{Skill on held-out years 2019--25, $100\,(1-\mathrm{CRPS}/\mathrm{CRPS}_{\mathrm{M0}})$, in $\%$, one step (16 days) and three months along the observed weather, on Box A and on Box B, the unseen landscape. M2, M3 and M4 are five-fit ensembles. RESTREND gives season-end values only.}\label{tab:onestep}\footnotesize\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lcccc}\toprule
  & \multicolumn{2}{c}{Box A} & \multicolumn{2}{c}{Box B}\\
 Model & 16 days & 3 months & 16 days & 3 months\\\midrule
-M0 history only & 0.000 & 0.000 & 0.000 & 0.000\\
-RESTREND & -- & 0.170 & -- & 0.190\\
-Gradient-boosted trees & 0.083 & 0.246 & 0.047 & 0.209\\
-M1 linear & 0.013 & 0.107 & 0.040 & 0.099\\
-M2 learned & 0.092 & 0.241 & 0.075 & 0.177\\
-M3 with topography & 0.099 & 0.254 & 0.083 & 0.204\\
-M4 ensemble & \textbf{0.111} & \textbf{0.273} & \textbf{0.131} & \textbf{0.274}\\
+M0 history only & 0.0 & 0.0 & 0.0 & 0.0\\
+RESTREND & -- & 17.0 & -- & 19.0\\
+Gradient-boosted trees & 8.3 & 24.6 & 4.7 & 20.9\\
+M1 linear & 1.3 & 10.7 & 4.0 & 9.9\\
+M2 learned & 9.4 & 24.9 & 8.8 & 19.7\\
+M3 with topography & 10.3 & 26.4 & 9.6 & 22.4\\
+M4 ensemble & \textbf{11.1} & \textbf{27.3} & \textbf{13.1} & \textbf{27.4}\\
 \bottomrule\end{tabular}\end{table}
 
-\begin{figure}[t]
-\centering\includegraphics[width=\columnwidth]{candidates/fig_suite_skill.png}
-\caption{Three-month skill on unseen years against history alone, given the weather that fell; no model uses a weather forecast. M2 and M3 show the mean and range of five fits. Chronos-2 \citep{chronos2} is a pretrained forecaster, scored zero-shot on 4,000 sampled pixels, with and without the weather.}
-\label{fig:response}
-\end{figure}
+\begin{table*}[t]\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\caption{Does $\Delta$ track when a patch responds to rain? Held-out rainy-season steps 2019--25 without a MODIS gap, in thirds within each pixel by the M4 ensemble's $\Delta$ at the starting state. Response is the NDVI change two steps on per $100$\,mm of rain anomaly, given starting greenness. Brackets are $95\%$ intervals from a bootstrap over years, and bold clears zero.}\label{tab:greeks}
+\begin{tabular}{lcccccc}\toprule
+ & \multicolumn{3}{c}{Real response, by $\Delta$ third} & Model $\Delta$ & \multicolumn{2}{c}{Most $-$ least}\\
+Landscape & least & medium & most & by third & & $95\%$ interval\\\midrule
+A, unseen years & $.032$ & $.073$ & $.091$ & $.046/.077/.094$ & $\mathbf{.060}$ & $[.027, .085]$\\
+B, unseen land & $.092$ & $.076$ & $.111$ & $.062/.083/.098$ & $.018$ & $[-.046, .083]$\\\bottomrule
+\end{tabular}
+\end{table*}
 
 \begin{table*}[t]\centering\caption{Pre-registered tests of $\Delta$ for the M4 ensemble, written before running; primary G1 on Box A. Held-out rainy-season starts 2019--25 whose two-step outcome does not span a MODIS gap. Gaps are the real response of the most minus the least $\Delta$ third (NDVI per $100$\,mm), given starting greenness. Brackets are $95\%$ bootstrap intervals over test years.}\label{tab:greekstests}\small
 \begin{tabular}{lcc}\toprule
@@ -72,6 +76,6 @@ G1, also given evaporative demand & $+.046$ $[+.015, +.065]$ pass & $-.027$ $[-.
 G2, across pixels & $+.078$ $[+.054, +.105]$ pass & $+.021$ $[-.037, +.082]$ fail\\\bottomrule
 \end{tabular}\end{table*}
 
-\paragraph{Fitting} We use full-batch Adam \citep{kingma2015} at a learning rate of $3\times10^{-3}$ for up to 2000 steps, keeping the parameters with the best 2018 log-likelihood; each step uses all $25\,600$ pixels and the $\sim340$ training-year transitions. Each M4 fit has 1,002 parameters, and the ensemble is the equal-weight mixture of five fits from different seeds. One fit takes about $2.5$ minutes on one H100 and $80$ on a laptop CPU, and GPU and CPU fits agree to about $0.005$ in skill. Jacobian-vector products of the rollout $F_h$, computed in JAX \citep{jax2018}, agree with finite differences to $3\times10^{-4}$, against a $\Delta$ of order $10^{-2}$. Code and the run directory behind every number are in the supplementary repository.
+\paragraph{Fitting} We use full-batch Adam \citep{kingma2015} at a learning rate of $3\times10^{-3}$ for up to 2000 steps, keeping the parameters with the best 2018 log-likelihood; each step uses all $25\,600$ pixels and the $\sim340$ training-year transitions. Each M4 fit has 1,002 parameters, and the ensemble is the equal-weight mixture of five fits from different seeds. One fit takes about $2.5$ minutes on one H100 and $80$ on a laptop CPU, and GPU and CPU fits agree to about half a point of skill. Jacobian-vector products of the rollout $F_h$, computed in JAX \citep{jax2018}, agree with finite differences to $3\times10^{-4}$, against a $\Delta$ of order $10^{-2}$. Code and the run directory behind every number are in the supplementary repository.
 \bibliography{references}
 \end{document}
