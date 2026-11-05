@@ -97,7 +97,7 @@ COMBINED = ["M1, linear rain", "M2, learned", "M2, rain removed", "M3 (inc. topo
             "Gradient-boosted trees", "Chronos-2 (inc. rain & evap.)"]
 SHORT = {"M1, linear rain": "M1 (linear rain)", "M2, learned": "M2 (neural net)", "M2, rain removed": "M2 (rain removed)",
          "M3 (inc. topography)": "M3 (topography)", "M4 5-seed ensemble (ours)": "M4 (evap. demand)",
-         "Gradient-boosted trees": "Boosted trees", "Chronos-2 (inc. rain & evap.)": "Chronos-2"}
+         "Gradient-boosted trees": "Gradient-boosted\ntrees", "Chronos-2 (inc. rain & evap.)": "Chronos-2"}
 
 
 # M2 and M3 as 5-fit ensembles, like M4 (runs/20261021_0147_m3/gpu/metrics_ens_{base,topo}.json): (A, B) at 16 days, 3 months
