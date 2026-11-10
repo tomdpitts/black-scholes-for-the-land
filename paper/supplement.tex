@@ -12,7 +12,7 @@
 \usepackage{amsmath}
 \graphicspath{{figs/}}
 \usepackage{xr}
-\externaldocument{main}
+\externaldocument[][nocite]{main}
 \renewcommand{\thefigure}{A\arabic{figure}}
 \renewcommand{\thetable}{A\arabic{table}}
 \pdfinfo{
@@ -23,6 +23,8 @@
 \title{Black--Scholes for the Land:\\ Modelling Savanna Response to Rain as a Dynamic World Model\\ Appendix}
 \author{
     Thomas Pitts\textsuperscript{\rm 1},
+    Yu Luo\textsuperscript{\rm 2},
+    Bin Liang\textsuperscript{\rm 1},
     Zhiyong Wang\textsuperscript{\rm 2}
 }
 \affiliations{
@@ -37,15 +39,15 @@
 \section{Location, Data, Tables, Fitting}
 \paragraph{Data and preparation} Three sources are fused onto one grid and one calendar. The surface is MODIS Terra MOD13Q1 v061 NDVI \citep{mod13} at $250$\,m, one composite per 16 days from 2002 to 2025 (537 composites), warped to a $0.0025^\circ$ grid of $160\times160$ pixels per box. Pixels whose reliability flag exceeds 1 (cloud, snow, fill; $2\%$ of pixel-steps) are treated as unobserved: their values are interpolated in time so the model always has an input state, but they are never used as targets. Each pixel's climatology is its mean NDVI per composite-of-year over 2003--2018, and the anomaly $a_t$ is NDVI minus that climatology. Rain is CHIRPS v2 daily rainfall \citep{chirps} at $0.05^\circ$, summed over each composite's 16-day window and bilinearly resampled to the grid, in units of $100$\,mm, with a climatology built the same way. Evaporative demand is FAO-56 reference evapotranspiration \citep{allen1998} from ERA5 at $0.25^\circ$ \citep{hersbach2020}, taken daily from the Open-Meteo archive on a $0.2^\circ$ lattice, summed over the same windows, bilinearly interpolated to the grid and expressed as an anomaly against 2003--2018. Static covariates $x$ are the pixel's mean NDVI, seasonal amplitude and climatological annual rain, and elevation, slope and topographic position from the Copernicus GLO-30 DEM \citep{copdem}, all standardised on Box A. The MODIS record has gaps: no composites for 61 days after 1 November 2021, so October--December 2021, one of the two drought seasons, contributes two composites, and about 30 days after 2 February 2023, 27 July 2024 and 2 December 2024. The $\Delta$ ranking test uses only starts whose two-step outcome does not span a gap. Other analyses keep them.
 
-\paragraph{Residual runs} The splits of Figures~\ref{fig:split} and~\ref{fig:attribution} use the five fitted M4 networks with no refitting. Each season starts from the observed state before its first 16-day window and runs six windows, and every term is a rollout with zero residual, averaged over the fits. Figure~\ref{fig:split} averages $8\times8$-pixel (2\,km) blocks and Figure~\ref{fig:attribution} the whole box, so their box means can differ slightly. The shaded range in Figure~\ref{fig:attribution} re-runs March--May 2022 along its observed weather 500 times. Each draw takes a random fit and, at each step, that fit's residual map from the same step of a random March--May season in 2003--2017, which keeps the residual's spatial correlation. Across the five fits the 2022 weather term runs from $-0.091$ to $-0.114$ NDVI. March--May 2021 splits into baseline $+0.00$, rain $+0.02$, evaporative demand $-0.01$ and residual $-0.03$, against an observed $-0.02$. Over 13 held-out seasons on 2\,km blocks, the residual moves $+0.004$ NDVI per $100$\,mm of climatic water balance, rain minus evaporative demand ($95\%$ interval $-0.005$ to $+0.022$, bootstrap over seasons), against $+0.040$ ($+0.027$ to $+0.062$) for a z-score. Across these seasons rain and evaporative demand departures are almost perfectly anti-correlated ($-0.98$), so their separate effects cannot be told apart. Taken separately, the residual moves $+0.004$ per $100$\,mm of rain ($-0.006$ to $+0.025$) and $-0.050$ per $100$\,mm of evaporative demand ($-0.156$ to $+0.017$), against $+0.045$ and $-0.301$ for a z-score. As a post hoc comparison, RESTREND moves $-0.009$ ($-0.021$ to $+0.016$), but its straight line misses at both extremes. In the wettest season, October--December 2019 ($435$\,mm above normal), it expects $+0.26$, the land reaches $+0.13$, and RESTREND puts $-0.13$ on the land, against $-0.02$ for M4. In the driest, October--December 2021 ($172$\,mm below normal), it expects $-0.10$, the land falls only to $-0.05$, and RESTREND credits the land $+0.05$, against $-0.004$ for M4. Reading these slopes as the weather's share left in the residual assumes management does not itself follow the weather.
+\paragraph{Residual runs} The splits of Figures~\ref{fig:split} and~\ref{fig:attribution} use the five fitted M4 networks with no refitting. Each season starts from the observed state before its first 16-day window and runs six windows, and every term is a rollout with zero residual, averaged over the fits. Figure~\ref{fig:split} averages $8\times8$-pixel (2.2\,km) blocks and Figure~\ref{fig:attribution} the whole box, so their box means can differ slightly. The shaded range in Figure~\ref{fig:attribution} re-runs March--May 2022 along its observed weather 500 times. Each draw takes a random fit and, at each step, that fit's residual map from the same step of a random March--May season in 2003--2017, which keeps the residual's spatial correlation. Across the five fits the 2022 weather term runs from $-0.091$ to $-0.114$ NDVI. March--May 2021 splits into baseline $+0.002$, rain $+0.018$, evaporative demand $-0.008$ and residual $-0.029$, against an observed $-0.017$. Over 13 held-out seasons on 2.2\,km blocks, the residual moves $+0.004$ NDVI per $100$\,mm of climatic water balance, rain minus evaporative demand ($95\%$ interval $-0.005$ to $+0.022$, bootstrap over seasons), against $+0.040$ ($+0.027$ to $+0.062$) for a z-score. Across these seasons rain and evaporative demand departures are almost perfectly anti-correlated ($-0.98$), so their separate effects cannot be told apart. Taken separately, the residual moves $+0.004$ per $100$\,mm of rain ($-0.006$ to $+0.025$) and $-0.050$ per $100$\,mm of evaporative demand ($-0.156$ to $+0.017$), against $+0.045$ and $-0.301$ for a z-score. As a post hoc comparison, RESTREND moves $-0.009$ ($-0.021$ to $+0.016$), but its straight line misses at both extremes. In the wettest season, October--December 2019 ($435$\,mm above normal), it expects $+0.262$, the land reaches $+0.129$, and RESTREND puts $-0.133$ on the land, against $-0.018$ for M4. In the driest, October--December 2021 ($172$\,mm below normal), it expects $-0.103$, the land falls only to $-0.054$, and RESTREND credits the land $+0.049$, against $-0.004$ for M4. Reading these slopes as the weather's share left in the residual assumes management does not itself follow the weather.
 
 \begin{figure*}[t]
 \centering\includegraphics[width=\textwidth]{fig_map.png}
-\caption{Where. Left: Kenya with the two $45$\,km boxes; Box A spans $37.15$--$37.55^\circ$E, $0.05$--$0.45^\circ$N, Box B $36.70$--$37.10^\circ$E, $0.25$--$0.65^\circ$N. Centre and right: Sentinel-2 true colour of each box in the 2023 dry season; dark green is forest and riverine woodland, pale is open rangeland. Contains modified Copernicus Sentinel data (2023).}
+\caption{Left: Kenya with the two $45$\,km boxes; Box A spans $37.15$--$37.55^\circ$E, $0.05$--$0.45^\circ$N, Box B $36.70$--$37.10^\circ$E, $0.25$--$0.65^\circ$N. Centre and right: Sentinel-2 true colour of each box in the 2023 dry season; dark green is forest and riverine woodland, pale is open rangeland. Contains modified Copernicus Sentinel data (2023).}
 \label{fig:map}
 \end{figure*}
 
-\begin{table}[t]\centering\caption{Skill on held-out years 2019--25, $100\,(1-\mathrm{CRPS}/\mathrm{CRPS}_{\mathrm{M0}})$, in $\%$, one step (16 days) and three months along the observed weather, on Box A and on Box B, the unseen landscape. M2, M3 and M4 are five-fit ensembles. RESTREND gives season-end values only.}\label{tab:onestep}\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{table}[t]\centering\caption{Skill on held-out years 2019--25, $100\,(1-\mathrm{CRPS}/\mathrm{CRPS}_{\mathrm{M0}})$, in $\%$, one step (16 days) and 3 months along the observed weather, on Box A and on Box B, the unseen landscape. M2, M3 and M4 are five-fit ensembles. RESTREND gives season-end values only.}\label{tab:onestep}\footnotesize\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lcccc}\toprule
  & \multicolumn{2}{c}{Box A} & \multicolumn{2}{c}{Box B}\\
 Model & 16 days & 3 months & 16 days & 3 months\\\midrule
@@ -75,6 +77,30 @@ G1 (primary), within pixel & $+.060$ $[+.027, +.085]$ pass & $+.018$ $[-.046, +.
 G1, also given evaporative demand & $+.046$ $[+.015, +.065]$ pass & $-.027$ $[-.107, +.028]$ fail\\
 G2, across pixels & $+.078$ $[+.054, +.105]$ pass & $+.021$ $[-.037, +.082]$ fail\\\bottomrule
 \end{tabular}\end{table*}
+
+\begin{table}[t]\centering\footnotesize
+\caption{Error of the Greeks' approximation of the weather term against the full rollout, M4, Box A held-out seasons without a MODIS gap, season-end box mean. Droughts use $\Delta$ alone \eqref{eq:taylor}; seasons more than $100$\,mm wetter than normal add the second-order terms $\Gamma$. MAM is March--May, OND October--December.}\label{tab:taylor}
+\begin{tabular}{lc@{\hspace{1.5em}}lc}\toprule
+\multicolumn{2}{c}{Droughts, $\Delta$} & \multicolumn{2}{c}{Wet, $\Delta+\Gamma$}\\
+\cmidrule(r{1em}){1-2}\cmidrule{3-4}
+Season & Error & Season & Error\\\midrule
+MAM 2019 & $1\%$ & OND 2019 & $0\%$\\
+OND 2020 & $0\%$ & MAM 2020 & $3\%$\\
+MAM 2022 & $5\%$ & OND 2023 & $4\%$\\
+OND 2022 & $8\%$ & MAM 2024 & $2\%$\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]\centering\footnotesize\setlength{\tabcolsep}{4pt}
+\caption{Weather left in the residual, Box A held-out seasons 2019--25. Slope: NDVI per $100$\,mm of climatic water balance (rain minus ED), season ends of 13 seasons, $95\%$ interval in brackets. Wettest and driest: season-end box-mean residual.}\label{tab:bias}
+\begin{tabular}{lccc}\toprule
+ & Slope & Wettest & Driest\\
+ & & OND 2019 & OND 2021\\\midrule
+z-score & $+.040$\,{\scriptsize$[+.027,+.062]$} & $+.129$ & $-.054$\\
+RESTREND & $-.009$\,{\scriptsize$[-.021,+.016]$} & $-.133$ & $+.049$\\
+M4 & $+.004$\,{\scriptsize$[-.005,+.022]$} & $-.018$ & $-.004$\\\bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{Fitting} We use full-batch Adam \citep{kingma2015} at a learning rate of $3\times10^{-3}$ for up to 2000 steps, keeping the parameters with the best 2018 log-likelihood; each step uses all $25\,600$ pixels and the $\sim340$ training-year transitions. Each M4 fit has 1,002 parameters, and the ensemble is the equal-weight mixture of five fits from different seeds. One fit takes about $2.5$ minutes on one H100 and $80$ on a laptop CPU, and GPU and CPU fits agree to about half a point of skill. Jacobian-vector products of the rollout $F_h$, computed in JAX \citep{jax2018}, agree with finite differences to $3\times10^{-4}$, against a $\Delta$ of order $10^{-2}$. Code and the run directory behind every number are in the supplementary repository.
 \bibliography{references}

@@ -68,7 +68,7 @@ def main(box="A"):
     fig = plt.figure(figsize=(6.6, 3.1))
     gs = fig.add_gridspec(2, 3, height_ratios=[1, .055], wspace=0.08, hspace=0.75)
     ext = (0, N, N, 0)
-    panels = [(obs, "Observed", "what the land did, 2019–25", f"average {obs.mean():.2f}"),
+    panels = [(obs, "Observed", "land's response, 2019–25", f"average {obs.mean():.2f}"),
               (m4, "M4 (ours)", "predicted", f"average {m4.mean():.2f};  typical error {err(m4):.0f}%"),
               (c2, "Chronos-2 (inc. rain & evap.)", "predicted", f"average {c2.mean():.2f};  typical error {err(c2):.0f}%")]
     for k, (m, title, sub, foot) in enumerate(panels):

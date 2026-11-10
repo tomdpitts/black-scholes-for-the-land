@@ -5,7 +5,9 @@ Colour: BrBG, as Figure 1 (brown = browner than expected, teal = greener). Flatn
 (the level is the land's signal plus drift).
 
   .venv/bin/python revision/implied_surface_plotly.py runs/<dir>
-      -> paper/figs/implied_surface/plotly_faceted_col.png   (stacked, one paper column; the paper's figure)
+      -> paper/figs/implied_surface/plotly_faceted_col.png   (stacked, one paper column)
+  .venv/bin/python revision/implied_surface_plotly.py runs/<dir> row
+      -> paper/figs/implied_surface/plotly_faceted_row.png   (side by side, full page width; the paper's figure)
 """
 import json
 import sys
@@ -13,6 +15,7 @@ import sys
 import numpy as np
 import plotly.graph_objects as go
 from matplotlib import colormaps
+from PIL import Image
 from plotly.subplots import make_subplots
 
 FIGS = "paper/figs/implied_surface"
@@ -52,7 +55,7 @@ def figure(J, layout="row"):
     for k, m in enumerate(METHODS):
         z = np.array(J[m]["cell_mean"], float)
         cb = (dict(orientation="h", x=0.5, xanchor="center", y=-0.075, yanchor="top", len=0.7, thickness=10)
-              if col else dict(len=0.6, thickness=12, x=1.0, y=0.45))
+              if col else dict(len=0.85, thickness=16, x=1.0, y=0.47))
         fig.add_trace(go.Surface(
             x=xc, y=days, z=z, colorscale=BRBG, cmin=-VMAX, cmax=VMAX, showscale=(k == 2),
             colorbar=dict(cb, title=dict(text="Residual (NDVI)" if col else "Residual<br>(NDVI)",
@@ -75,9 +78,10 @@ def figure(J, layout="row"):
             aspectmode="manual", aspectratio=dict(x=1.5, y=0.9, z=0.6) if col else dict(x=1.3, y=1.0, z=0.75),
             camera=dict(eye=dict(x=0.72, y=-1.72, z=0.8) if col else dict(x=0.95, y=-2.25, z=1.15),
                         center=dict(x=0, y=0, z=-0.15)),
-            annotations=[dict(x=x0, y=days[0], z=ZR[0], text=t, showarrow=False, xanchor=a, yshift=-34 if col else -40,
+            # the drier corner sits higher in perspective; shift it further so both labels share a row
+            annotations=[dict(x=x0, y=days[0], z=ZR[0], text=t, showarrow=False, xanchor=a, yshift=dy,
                               font=dict(size=fs["axis"], color=MUTED))
-                         for x0, t, a in ((E[0], "\u2190 drier", "right"), (E[-1], "wetter \u2192", "left"))]
+                         for x0, t, a, dy in ((E[0], "\u2190 drier", "right", -128), (E[-1], "wetter \u2192", "left", -62))]
                         if not col else [])})
         dom = fig.layout[f"scene{k + 1 if k else ''}"].domain
         txt = (f"{TITLE[m]}<br><span style='font-size:{fs['sub']}px;color:{MUTED}'>"
@@ -86,11 +90,11 @@ def figure(J, layout="row"):
             fig.add_annotation(text=txt, x=0.0, xanchor="left", y=dom.y[1] - 0.01, yanchor="top", xref="paper",
                                yref="paper", showarrow=False, align="left", font=dict(size=fs["title"], color=INK))
         else:
-            fig.add_annotation(text=txt, x=sum(dom.x) / 2, xanchor="center", y=0.98, yanchor="top", xref="paper",
+            fig.add_annotation(text=txt, x=sum(dom.x) / 2, xanchor="center", y=0.93, yanchor="top", xref="paper",
                                yref="paper", showarrow=False, font=dict(size=fs["title"], color=INK))
     fig.update_layout(font=dict(family=FONT, color=INK), paper_bgcolor="white",
-                      width=500 if col else 1500, height=640 if col else 520,
-                      margin=dict(l=0, r=0, t=0, b=95) if col else dict(l=0, r=10, t=40, b=0))
+                      width=500 if col else 1500, height=640 if col else 430,
+                      margin=dict(l=0, r=0, t=0, b=95) if col else dict(l=0, r=10, t=0, b=0))
     if col:
         fig.add_annotation(text=f"<span style='color:{MUTED}'>\u2190 drier</span>      {XLAB}      "
                                 f"<span style='color:{MUTED}'>wetter \u2192</span>", x=0.5, y=-0.005, xref="paper",
@@ -98,13 +102,16 @@ def figure(J, layout="row"):
     return fig
 
 
-def main(out):
+def main(out, layout="col"):
     J = json.load(open(f"{out}/surface.json"))
-    name, layout = "plotly_faceted_col", "col"
+    name = f"plotly_faceted_{layout}"
     fig = figure(J, layout)
-    fig.write_image(f"{FIGS}/{name}.png", scale=5)
+    # 3000 px wide (~430 dpi across a 7 in page), flattened to RGB: an alpha channel makes pdfLaTeX decode
+    # every pixel on each pass, and the old 7500 px RGBA render pushed Overleaf past its compile time limit
+    fig.write_image(f"{FIGS}/{name}.png", scale=2)
+    Image.open(f"{FIGS}/{name}.png").convert("RGB").save(f"{FIGS}/{name}.png", optimize=True)
     print("wrote", f"{FIGS}/{name}.png")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else "col")

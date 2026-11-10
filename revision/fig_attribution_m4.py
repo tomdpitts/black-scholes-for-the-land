@@ -108,9 +108,9 @@ def main():
                  fontsize=8.5, loc="left")
     ax.grid(axis="y", color="#ebe5da", lw=0.6); ax.set_axisbelow(True)
     kw = dict(fontsize=7.5, ha="right")
-    ax.text(95, hist[-1] + 0.007, f"M0 (history alone) {hist[-1]:+.2f}".replace("-", "−"), color=MUTED, **kw)
-    ax.text(95, expected[-1] + 0.007, f"expected from weather {expected[-1]:+.2f}".replace("-", "−"), color=INK, **kw)
-    ax.text(95, obs[-1] - 0.016, f"observed {obs[-1]:+.2f}".replace("-", "−"), color=INK, fontweight="bold", **kw)
+    ax.text(95, hist[-1] + 0.007, f"M0 (history alone) {hist[-1]:+.3f}".replace("-", "−"), color=MUTED, **kw)
+    ax.text(95, expected[-1] + 0.007, f"expected from weather {expected[-1]:+.3f}".replace("-", "−"), color=INK, **kw)
+    ax.text(95, obs[-1] - 0.016, f"observed {obs[-1]:+.3f}".replace("-", "−"), color=INK, fontweight="bold", **kw)
     ax.legend(loc="lower left", fontsize=6.8, frameon=False, handlelength=1.8)
     top, segs = 0.0, []
     for v, col, lab in ((start, LIGHT, "baseline,\nnormal weather"), (rain, DARK_BLUE, "rain"),
@@ -119,7 +119,7 @@ def main():
         top += v
     for t_, b_, col, lab in segs:
         bx.bar(0, b_ - t_, bottom=t_, width=0.55, color=col, edgecolor="white", linewidth=1.2)
-        bx.text(0.36, (t_ + b_) / 2, f"{lab}\n{b_ - t_:+.2f}".replace("-", "−"), va="center", ha="left", fontsize=7,
+        bx.text(0.36, (t_ + b_) / 2, f"{lab}\n{b_ - t_:+.3f}".replace("-", "−"), va="center", ha="left", fontsize=7,
                 color=INK, linespacing=1.15)
     bx.set_xlim(-0.4, 1.9); bx.set_xticks([]); bx.tick_params(left=False, labelleft=False)
     bx.spines["left"].set_visible(False); bx.spines["bottom"].set_visible(False)
