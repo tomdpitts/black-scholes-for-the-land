@@ -1,0 +1,135 @@
+\documentclass[letterpaper]{article} % DO NOT CHANGE THIS
+\usepackage{aaai2027}  % DO NOT CHANGE THIS
+\usepackage[hyphens]{url}  % DO NOT CHANGE THIS
+\usepackage{graphicx} % DO NOT CHANGE THIS
+\urlstyle{rm} % DO NOT CHANGE THIS
+\def\UrlFont{\rm}  % DO NOT CHANGE THIS
+\usepackage{natbib}  % DO NOT CHANGE THIS AND DO NOT ADD ANY OPTIONS TO IT
+\usepackage{caption} % DO NOT CHANGE THIS AND DO NOT ADD ANY OPTIONS TO IT
+\frenchspacing  % DO NOT CHANGE THIS
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\graphicspath{{figs/}}
+\usepackage{xr}
+\externaldocument[][nocite]{main}
+\renewcommand{\thefigure}{A\arabic{figure}}
+\renewcommand{\thetable}{A\arabic{table}}
+\pdfinfo{
+/TemplateVersion (2027.1)
+}
+% Stack floats at the top of float-only pages instead of spreading them down the page
+\makeatletter\setlength{\@fptop}{0pt}\setlength{\@fpsep}{12pt}\setlength{\@fpbot}{0pt plus 1fil}\setlength{\@dblfptop}{0pt}\setlength{\@dblfpsep}{12pt}\setlength{\@dblfpbot}{0pt plus 1fil}\makeatother
+\setcounter{secnumdepth}{0}
+\nocopyright
+
+\title{Black--Scholes for the Land:\\ Modelling Weather-Adjusted Rangeland Response as an Invertible Transition-Density World Model\\ Appendix}
+\author{
+    Thomas Pitts\textsuperscript{\rm 1},
+    Yu Luo\textsuperscript{\rm 2},
+    Chuancheng Shi\textsuperscript{\rm 2},
+    Bin Liang\textsuperscript{\rm 1},
+    Zhiyong Wang\textsuperscript{\rm 2}
+}
+\affiliations{
+    \textsuperscript{\rm 1}University of Technology Sydney\\
+    \textsuperscript{\rm 2}University of Sydney\\
+    thomas.pitts@uts.edu.au
+}
+
+\begin{document}
+\maketitle
+
+\section{Data, Methods and Further Results}
+\paragraph{Data and preparation} Three sources are fused onto one grid and one calendar. The surface is MODIS Terra MOD13Q1 v061 NDVI \citep{mod13} at $250$\,m, one composite per 16 days from 2002 to 2025 (537 composites), warped to a $0.0025^\circ$ grid of $160\times160$ pixels per box. Pixels flagged as cloud, snow or fill (reliability other than 0 or 1, $2\%$ of pixel-steps in Box A and $1\%$ in Box B) are treated as unobserved: their values are interpolated in time so the model always has an input state, but they are never used as targets. Each pixel's climatology is its mean NDVI per composite-of-year over 2003--2018, and the anomaly $a_t$ is NDVI minus that climatology. Rain is CHIRPS v2 daily rainfall \citep{chirps} at $0.05^\circ$, summed over each composite's 16-day window and bilinearly resampled to the grid, in units of $100$\,mm, with a climatology built the same way. Evaporative demand is FAO-56 reference evapotranspiration \citep{allen1998} from ERA5 at $0.25^\circ$ \citep{hersbach2020}, taken daily from the Open-Meteo archive on a $0.2^\circ$ lattice, summed over the same windows, bilinearly interpolated to the grid and expressed as an anomaly against 2003--2018. Static covariates $x$ are the pixel's mean NDVI, seasonal amplitude and climatological annual rain, and elevation, slope and topographic position from the Copernicus GLO-30 DEM \citep{copdem}, all standardised on Box A. The MODIS record has gaps. There are no composites for 61 days after 1 November 2021, about 30 days after 2 February 2023, 27 July 2024 and 2 December 2024, and 144 days after 26 June 2025. A season is six consecutive composites, so October--December 2021, the driest held-out season, has two composites before the gap and ends at the observed composite of 18 February 2022. The $\Delta$ evaluations and the Taylor check (Table~\ref{tab:taylor}) use only starts and seasons that do not span a gap. Other analyses keep them.
+
+\paragraph{Residual runs} The splits of Figures~\ref{fig:split} and~\ref{fig:attribution} use the five fitted M4 networks with no refitting. Each season starts from the observed state before its first 16-day window and runs six windows, and every term is a rollout with zero residual, averaged over the fits. Figure~\ref{fig:split} averages $8\times8$-pixel (2.2\,km) blocks over the pixels observed at season end, and Figure~\ref{fig:attribution} every pixel in the box, so their box means can differ slightly. The shaded range in Figure~\ref{fig:attribution} re-runs March--May 2022 along its observed weather 500 times. Each draw takes a random fit and, at each step, that fit's residual map from the same step of a random March--May season in 2003--2017, which keeps the residual's spatial correlation. Across the five fits the 2022 weather term runs from $-0.091$ to $-0.114$ NDVI. Over 13 held-out seasons on 2.2\,km blocks, the residual moves $+0.004$ NDVI per $100$\,mm of climatic water balance, rain minus evaporative demand ($95\%$ interval $-0.005$ to $+0.022$, bootstrap over seasons), against $+0.040$ ($+0.027$ to $+0.062$) for a z-score (Table~\ref{tab:bias}). Across these seasons rain and evaporative demand departures are almost perfectly anti-correlated ($-0.98$), so the residual's separate slopes on each cannot be told apart. Taken separately, the residual moves $+0.004$ per $100$\,mm of rain ($-0.006$ to $+0.025$) and $-0.050$ per $100$\,mm of evaporative demand ($-0.156$ to $+0.017$), against $+0.045$ and $-0.301$ for a z-score. RESTREND moves $-0.008$ ($-0.021$ to $+0.016$), but its straight line misses at both extremes. In the wettest season, October--December 2019 ($435$\,mm above normal), it expects $+0.262$, $49\%$ above the highest season-end box mean in its 2003--2017 training seasons ($+0.175$, March--May 2003), the land reaches $+0.129$, and RESTREND puts $-0.133$ on the land, against $-0.018$ for M4. In the driest, October--December 2021 ($172$\,mm below normal), it expects $-0.103$, the land falls only to $-0.054$, and RESTREND credits the land $+0.049$, against $-0.004$ for M4. Reading these slopes as the weather's share left in the residual assumes management does not itself follow the weather.
+
+\begin{figure*}[t]
+\centering\includegraphics[width=\textwidth]{chronos2/fig_maps_split_2022_m4e.png}
+\caption{Box A, March--May 2022, a held-out year. Season-end NDVI anomaly per 2.2\,km block from M4. Every run starts from the late-February state with residual zero. The baseline is the run under normal weather. The run under the weather that fell, minus the baseline, is split between rain and evaporative demand by Shapley value. The residual is observed minus that run. Elevation, left, is an input and not a share.}
+\label{fig:split}
+\end{figure*}
+
+\paragraph{Baselines} M0, the reference for skill, is M1 with rain and the water memory removed: $\mu$ and $\log\sigma$ are linear in $a_t$, $\bar a_t$, the seasonal phase and the pixel's mean NDVI, seasonal amplitude and climatological annual rain. The z-score expects normal greenness, so its residual is the whole observed anomaly. RESTREND regresses each pixel's anomaly at the end of six 16-day windows on the rain departure summed over those windows, by least squares on Box A starts in 2003--2017, giving an intercept, a slope and a residual spread per pixel ($3\times25\,600=76{,}800$ parameters). It gives season-end values only, so it is scored at 3 months. On Box B, which it never sees, each of the three per-pixel coefficients is predicted from the pixel's mean NDVI, seasonal amplitude and climatological annual rain by a linear regression fitted on Box A. Gradient-boosted trees \citep{friedman2001} (scikit-learn's HistGradientBoostingRegressor) predict the 16-day change $a_{t+1}-a_t$ from $a_t$, $a_{t-1}$, $a_{t-2}$, the $5\times5$ neighbourhood mean, the seasonal phase, the six static traits, and rain and evaporative demand for windows $t-4$ to $t+1$. A second model of the log squared residual gives the spread, and 3-month forecasts are sampled rollouts. The trees are fitted and early-stopped on the same years as M4. They are not given M4's water memory $w_t$, which depends on M4's own parameters.
+
+\paragraph{Chronos-2} Chronos-2 \citep{chronos2} runs zero-shot, each pixel as its own series: the same gap-filled NDVI anomaly every other model sees, from January 2002 up to the forecast date, with the rain and evaporative demand anomalies as covariates, past values over the history and the values that fell over the forecast window. Its 21 output quantiles are turned into a predictive distribution for CRPS by linear interpolation in the normal score. Skill is scored on a fixed random sample of 4,000 of the 25,600 pixels, the same in both boxes. For the 2022 split, each of the four combinations of observed and normal weather is rolled forward one step at a time along the median, the analogue of M4's zero residual, over the full box. Its $\Delta$ is the derivative of the median two steps ahead with respect to the rain anomaly one step ahead, by automatic differentiation through the network, along normal weather from the observed history, on the 4,000 pixels.
+
+\paragraph{Evaluating $\Delta$} The observed response of a 2.2\,km block is the slope of the two-step change $a_{t+2}-a_t$ on the rain departure in window $t+1$, controlling for $a_t$, pooled over the block's pixels and its held-out rainy-season starts whose outcome does not span a MODIS gap. A model's error is the mean absolute gap between its block map of $\Delta$ and the observed map, as a percentage of the observed map's mean absolute value. Two references set the scale. Observed maps from odd and from even years differ by $0.026$ NDVI per $100$\,mm. Halved for the full data, this gives a noise floor of about $0.013$, or $19\%$, the error even the true sensitivities would show. A flat map at the box mean scores $37\%$.
+
+\paragraph{Implied residual surface} Each of the 141 16-day starts in 2019--2025 is scored at horizons of one to six steps. The water-balance departure is rain minus evaporative demand, relative to climatology, summed from the start to the horizon and averaged over the 2.2\,km block, then divided by its standard deviation over 2003--2017 starts at that horizon, as moneyness is scaled by $\sqrt{T}$. The height is the block-mean residual: for the z-score the observed anomaly, for RESTREND the observed anomaly minus its per-pixel line, refitted at each horizon, and for M4 the observed anomaly minus the ensemble's zero-residual rollout from the observed start. Cells are bins one standard deviation wide from $-4$ to $+7$, omitted where fewer than three distinct years contribute.
+
+\begin{figure*}[t]
+\centering\includegraphics[width=\textwidth]{fig_map.png}
+\caption{Left: Kenya with the two $45$\,km boxes. Box A spans $37.15$--$37.55^\circ$E, $0.05$--$0.45^\circ$N, and Box B $36.70$--$37.10^\circ$E, $0.25$--$0.65^\circ$N. Centre and right: Sentinel-2 true colour of each box in the 2023 dry season. Dark green is forest and riverine woodland, and pale is open rangeland. Contains modified Copernicus Sentinel data (2023).}
+\label{fig:map}
+\end{figure*}
+
+\begin{table}[t]\centering\small\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccc}\toprule
+ & \multicolumn{2}{c}{Box A} & \multicolumn{2}{c}{Box B}\\
+Model & 16 days & 3 months & 16 days & 3 months\\\midrule
+M0 history only & 0.0 & 0.0 & 0.0 & 0.0\\
+RESTREND & -- & 17.0 & -- & 19.0\\
+Gradient-boosted trees & 8.3 & 24.6 & 4.7 & 20.9\\
+Chronos-2 & 5.8 & 27.1 & 7.1 & \textbf{28.4}\\
+M1 linear & 1.3 & 10.7 & 4.0 & 9.9\\
+M2 rain removed & 1.6 & $-0.5$ & 1.2 & $-4.8$\\
+M2 neural net & 9.4 & 24.9 & 8.8 & 19.7\\
+M3 with topography & 10.3 & 26.4 & 9.6 & 22.4\\
+M4 ensemble & \textbf{11.1} & \textbf{27.3} & \textbf{13.1} & 27.4\\
+\bottomrule\end{tabular}
+\caption{Skill on held-out years 2019--25, $100\,(1-\mathrm{CRPS}/\mathrm{CRPS}_{\mathrm{M0}})$, in $\%$, one step (16 days) and 3 months along the observed weather, on Box A and on Box B, the unseen landscape. M2, M3 and M4 are five-fit ensembles. M2 with rain removed is a single fit. RESTREND gives season-end values only. Chronos-2 is scored on 4,000 sampled pixels, where M4 scores $10.9$, $26.8$, $13.0$ and $27.4$. Bold is best per column.}\label{tab:onestep}
+\end{table}
+
+\begin{table}[t]\centering\small\setlength{\tabcolsep}{4pt}
+
+\begin{tabular}{lccc}\toprule
+ & Slope & Wettest & Driest\\
+ & & OND 2019 & OND 2021\\\midrule
+z-score & $+.040$\,{\small$[+.027,+.062]$} & $+.129$ & $-.054$\\
+RESTREND & $-.008$\,{\small$[-.021,+.016]$} & $-.133$ & $+.049$\\
+M4 & $+.004$\,{\small$[-.005,+.022]$} & $-.018$ & $-.004$\\\bottomrule
+\end{tabular}
+\caption{Weather left in the residual, Box A held-out seasons 2019--25. Slope: NDVI per $100$\,mm of climatic water balance (rain minus evaporative demand), season ends of 13 seasons, $95\%$ interval in brackets. Wettest and driest: season-end box-mean residual.}\label{tab:bias}
+\end{table}
+
+\begin{table}[t]\centering\small
+
+\begin{tabular}{lc@{\hspace{1.5em}}lc}\toprule
+\multicolumn{2}{c}{Droughts, $\Delta$} & \multicolumn{2}{c}{Wet, $\Delta+\Gamma$}\\
+\cmidrule(r{1em}){1-2}\cmidrule{3-4}
+Season & Error & Season & Error\\\midrule
+MAM 2019 & $1\%$ & OND 2019 & $0\%$\\
+OND 2020 & $0\%$ & MAM 2020 & $3\%$\\
+MAM 2022 & $5\%$ & OND 2023 & $4\%$\\
+OND 2022 & $8\%$ & MAM 2024 & $2\%$\\\bottomrule
+\end{tabular}
+\caption{Error of the Greeks' approximation of the weather term against the full rollout, M4, Box A held-out seasons without a MODIS gap, season-end box mean. Droughts, here seasons drier than normal, use $\Delta$ alone \eqref{eq:taylor}. Seasons more than $100$\,mm wetter than normal add the second-order terms $\Gamma$. MAM is March--May, OND October--December.}\label{tab:taylor}
+\end{table}
+
+\begin{table*}[t]\centering\small\setlength{\tabcolsep}{3pt}
+
+\begin{tabular}{lcccccc}\toprule
+ & \multicolumn{3}{c}{Real response, by $\Delta$ third} & Model $\Delta$ & \multicolumn{2}{c}{Most $-$ least}\\
+Landscape & least & medium & most & by third & & $95\%$ interval\\\midrule
+A, unseen years & $.032$ & $.073$ & $.091$ & $.046/.077/.094$ & $\mathbf{.060}$ & $[.027, .085]$\\
+B, unseen land & $.092$ & $.076$ & $.111$ & $.062/.083/.098$ & $.018$ & $[-.046, .083]$\\\bottomrule
+\end{tabular}
+\caption{Does $\Delta$ track when a patch responds to rain? Held-out rainy-season steps 2019--25 without a MODIS gap, in thirds within each pixel by the M4 ensemble's $\Delta$ at the starting state. Response is the NDVI change two steps on per $100$\,mm of rain anomaly, given starting greenness. Brackets are $95\%$ intervals from a bootstrap over years, and bold clears zero.}\label{tab:greeks}
+\end{table*}
+
+\begin{table*}[t]\centering\small
+\begin{tabular}{lcc}\toprule
+Test & Box A & Box B\\\midrule
+G1 (primary), within pixel & $+.060$ $[+.027, +.085]$ pass & $+.018$ $[-.046, +.083]$ fail\\
+G1, also given evaporative demand & $+.046$ $[+.015, +.065]$ pass & $-.027$ $[-.107, +.028]$ fail\\
+G2, across pixels & $+.078$ $[+.054, +.105]$ pass & $+.021$ $[-.037, +.082]$ fail\\\bottomrule
+\end{tabular}
+\caption{Pre-registered tests of $\Delta$ for the M4 ensemble, written before running. G1 on Box A is primary. Held-out rainy-season starts 2019--25 whose two-step outcome does not span a MODIS gap. Gaps are the real response of the most minus the least $\Delta$ third (NDVI per $100$\,mm), given starting greenness. Brackets are $95\%$ bootstrap intervals over test years.}\label{tab:greekstests}
+\end{table*}
+
+
+\paragraph{Fitting} We use full-batch Adam \citep{kingma2015} at a learning rate of $3\times10^{-3}$ for up to 2000 steps, keeping the parameters with the best 2018 log-likelihood. Each step uses all $25\,600$ pixels and the $\sim340$ training-year transitions. Each M4 fit has 1,002 parameters, and the ensemble is the equal-weight mixture of five fits from different seeds. One fit takes about $2.5$ minutes on one H100 and $80$ minutes on a laptop CPU, and GPU and CPU fits agree to about half a point of skill. Jacobian-vector products of the rollout $F_h$, computed in JAX \citep{jax2018}, agree with finite differences to $3\times10^{-4}$, against a $\Delta$ of order $10^{-2}$. Code, and the pre-registration and write-up of every run, are at \url{https://github.com/tomdpitts/black-scholes-for-the-land}.
+\bibliography{references}
+\end{document}

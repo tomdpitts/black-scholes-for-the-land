@@ -1,0 +1,618 @@
+<title>Black–Scholes for the Land</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#F1F2EC; --panel:#E5E9DE; --card:#FAFBF7; --ink:#17241C; --muted:#56635A; --line:#CAD1C2;
+  --grass:#3F6B26; --dry:#A8761F; --rain:#2D6DB5; --cf:#D9622B; --neg:#B23A2A; --pos:#3F7D3A;
+  --band:rgba(45,109,181,.16); --ghost:rgba(45,109,181,.18);
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Helvetica Neue", Arial, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#111712; --panel:#1A231C; --card:#161E18; --ink:#E4EADF; --muted:#9BA89D; --line:#2E3B31;
+    --grass:#93C46A; --dry:#DDAA4C; --rain:#72A8EA; --cf:#F08A55; --neg:#E8735F; --pos:#86C27C;
+    --band:rgba(114,168,234,.18); --ghost:rgba(114,168,234,.2);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#111712; --panel:#1A231C; --card:#161E18; --ink:#E4EADF; --muted:#9BA89D; --line:#2E3B31;
+  --grass:#93C46A; --dry:#DDAA4C; --rain:#72A8EA; --cf:#F08A55; --neg:#E8735F; --pos:#86C27C;
+  --band:rgba(114,168,234,.18); --ghost:rgba(114,168,234,.2);
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1.07rem;line-height:1.65;padding-inline:20px;padding-block:0 64px}
+.wrap{max-width:700px;margin-inline:auto}
+.wide{max-width:920px;margin-inline:auto}
+h1,h2,h3{font-family:var(--display);line-height:1.12;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,6vw,3.5rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.55rem,3.6vw,2.1rem);font-weight:800;letter-spacing:-.01em}
+h3{font-size:1.18rem;font-weight:600}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--grass);font-weight:600}
+.stack{display:flex;flex-direction:column;gap:1.05rem}
+section{padding-block:56px 8px;display:flex;flex-direction:column;gap:1.1rem}
+.muted{color:var(--muted)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+strong{font-weight:700}
+a{color:var(--rain)}
+:focus-visible{outline:3px solid var(--rain);outline-offset:2px}
+
+/* hero */
+header{padding-block:64px 8px;display:flex;flex-direction:column;gap:1.2rem}
+.lede{font-size:1.22rem;line-height:1.55}
+.strip{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:.6rem}
+.strip div{height:46px;border-radius:4px;display:flex;align-items:flex-end;justify-content:center;font-family:var(--mono);font-size:.68rem;padding-bottom:4px;color:#fff}
+.strip-cap{font-size:.9rem;color:var(--muted)}
+
+/* callouts */
+.key{background:var(--panel);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:.5rem}
+.key .eyebrow{color:var(--muted)}
+.equation{font-family:var(--display);font-weight:600;font-size:clamp(1.05rem,2.6vw,1.35rem);line-height:1.35}
+.equation .t-guess{color:var(--rain)}
+.equation .t-left{color:var(--cf)}
+
+/* glossary */
+dl{display:grid;grid-template-columns:max-content 1fr;gap:.55rem 1.1rem;margin:0}
+dt{font-family:var(--mono);font-size:.88rem;font-weight:600;padding-top:.15rem}
+dd{margin:0}
+@media (max-width:520px){dl{grid-template-columns:1fr;gap:.15rem}dd{margin-bottom:.6rem}}
+
+/* bucket */
+.bucket{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:end;height:150px;padding:12px 4px 0;border-bottom:1px solid var(--line)}
+.bucket .col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%}
+.bucket .bar{width:70%;max-width:64px;background:var(--rain);border-radius:3px 3px 0 0}
+.bucket .v{font-family:var(--mono);font-size:.78rem}
+.bucket-x{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;font-family:var(--mono);font-size:.74rem;color:var(--muted);text-align:center;padding-top:4px}
+
+/* flow diagram */
+.flow{display:grid;grid-template-columns:1fr auto 1.05fr auto 1fr;gap:12px;align-items:center}
+.flow .col{display:flex;flex-direction:column;gap:8px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 12px;font-size:.93rem;line-height:1.35}
+.chip b{display:block;font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.rule{background:var(--ink);color:var(--bg);border-radius:12px;padding:18px;text-align:center;display:flex;flex-direction:column;gap:6px}
+.rule h3{font-size:1.1rem}
+.rule p{font-size:.88rem;opacity:.85;line-height:1.4}
+.arrow{font-family:var(--mono);color:var(--muted);font-size:1.3rem;text-align:center}
+.out-guess{border-color:var(--rain)}
+.out-spread{border-style:dashed;border-color:var(--rain)}
+@media (max-width:720px){.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
+
+/* tables */
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td:first-child{font-family:var(--mono);font-weight:600;white-space:nowrap}
+tr.win td{background:var(--panel)}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.stat{border-top:2px solid var(--ink);padding-top:10px;display:flex;flex-direction:column;gap:2px}
+.stat .big{font-family:var(--display);font-weight:800;font-size:2rem;line-height:1}
+.stat span:last-child{font-size:.92rem;color:var(--muted);line-height:1.4}
+
+/* lab */
+.lab{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:18px;margin-top:.6rem}
+.lab-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:baseline}
+.toy-tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--muted)}
+.presets{display:flex;flex-wrap:wrap;gap:8px}
+.presets button,.seg button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 14px;cursor:pointer}
+.presets button:hover,.seg button:hover{border-color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.ctl{display:flex;flex-direction:column;gap:8px}
+.ctl label,.ctl .lbl{font-family:var(--mono);font-size:.76rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.ctl .val{font-family:var(--mono);color:var(--ink);text-transform:none;letter-spacing:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+input[type=range]{width:100%;accent-color:var(--rain)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.88rem}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.sw{width:22px;height:0;border-top:3px solid}
+.sw.dash{border-top-style:dashed;border-top-width:2px}
+.sw.box{height:10px;border:none;border-radius:2px}
+.chart-wrap{overflow-x:auto}
+.chart-wrap svg{display:block;width:100%;min-width:500px;height:auto}
+svg text{fill:var(--muted);font-family:var(--mono);font-size:12px}
+svg .lab-title{fill:var(--ink);font-family:var(--body);font-size:13px;font-weight:700}
+.split{display:flex;flex-direction:column;gap:10px}
+.split-row{display:grid;grid-template-columns:minmax(120px,190px) 1fr 64px;gap:12px;align-items:center;font-size:.95rem}
+.split-row .track{position:relative;height:16px;background:var(--panel);border-radius:3px}
+.split-row .track::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;border-left:1px solid var(--muted)}
+.split-row .fill{position:absolute;top:0;bottom:0;border-radius:3px}
+.split-row .num{text-align:right}
+.split-row.total{font-weight:700}
+.readout{font-size:1.02rem;line-height:1.55}
+@media (max-width:520px){.lab{padding:16px}.split-row{grid-template-columns:1fr 56px}.split-row .track{grid-column:1 / -1;grid-row:2}}
+
+/* figures */
+figure{margin:0;display:flex;flex-direction:column;gap:10px}
+.fig-img{background:#fff;border-radius:10px;padding:10px;border:1px solid var(--line)}
+.fig-img img{display:block;width:100%;height:auto}
+figcaption{font-size:.92rem;color:var(--muted);line-height:1.5}
+.twin{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.mini{display:flex;flex-direction:column;gap:8px}
+.mini svg{width:100%;height:auto;display:block}
+
+/* bs table colours */
+.bs td:first-child{font-family:var(--body);font-weight:400;white-space:normal}
+.bs td:last-child{font-weight:700}
+
+ul.plain{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:.45rem}
+footer{padding-block:48px 0;font-size:.9rem;color:var(--muted);border-top:1px solid var(--line);margin-top:56px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Research explainer · Laikipia, Kenya</span>
+  <h1>Did the rain do it, or did something else?</h1>
+  <p class="lede">When grassland goes brown, maybe the rain failed. Maybe something else happened: too many cattle, a fire, land being cleared. Real money depends on telling these apart. This page explains a model that splits what happened to the land into <strong>the rain's part</strong> and <strong>everything else</strong>.</p>
+  <div class="strip" aria-hidden="true" id="strip"></div>
+  <p class="strip-cap">A grass patch through the 2022 drought season, one tile per 16 days. Greener than normal is green, browner than normal is brown.</p>
+</header>
+
+<section>
+  <span class="eyebrow">Why it matters</span>
+  <h2>Two kinds of payment need the same answer</h2>
+  <p><strong>Carbon credits.</strong> A project gets paid for making land healthier than it would have been anyway. "Anyway" is called the <em>baseline</em>. The Northern Kenya Rangelands Carbon Project is the world's largest soil-carbon project. In 2023 its baseline was challenged hard enough that Verra, the body that issues the credits, paused it for eight months. The method it used never asks how the land responds to rain.</p>
+  <p><strong>Drought insurance for herders.</strong> Insurance in the same region pays herders when pasture is poor. The insurer wants to pay for drought, but not for overgrazing.</p>
+  <p>Both need to know how much of a brown season was the rain. The usual shortcut compares a patch with its own past: "is it browner than it normally is on this date?" That ignores this year's rain. So in a drought, the shortcut blames the people managing the land.</p>
+</section>
+
+<section>
+  <span class="eyebrow">The data</span>
+  <h2>What the model gets to see</h2>
+  <p>A NASA satellite called MODIS measures how green the ground is every 16 days, for every 250 m square, going back to 2002. A rainfall dataset called CHIRPS adds up how much rain fell on each square over the same 16 days.</p>
+  <p>The study looks at two areas in Laikipia, central Kenya, each 45 km across. That is 160 × 160 squares, so 25,600 squares per area. Laikipia has two rainy seasons, March to May and October to December.</p>
+  <dl>
+    <dt>NDVI</dt><dd>The greenness score. Around 0.1 for bare soil, up to about 0.8 for thick green plants.</dd>
+    <dt>Anomaly</dt><dd>How much greener or browner a square is than normal for that date. Zero means "normal for this time of year". The model predicts this, not raw greenness, so it doesn't waste effort on the normal seasons.</dd>
+    <dt>Pixel</dt><dd>One 250 m square.</dd>
+    <dt>Step</dt><dd>One 16-day window.</dd>
+  </dl>
+  <p>To keep the test fair, the model learned from Area A in 2003–2017. It was then tested on 2019–2025, years it had never seen, including the 2022 drought. It was also tested on Area B, which it never saw at all.</p>
+</section>
+
+<section>
+  <span class="eyebrow">The rule</span>
+  <h2>The whole model is one rule, used over and over</h2>
+  <p>Every 16 days, for every square, the model makes a forecast from what it knows <em>right now</em>. It doesn't look back through the whole history. Everything it needs is packed into two numbers per square.</p>
+  <div class="key">
+    <span class="eyebrow">Number 1 · greenness</span>
+    <p>The anomaly: how green the square is compared with normal for today's date.</p>
+  </div>
+  <div class="key">
+    <span class="eyebrow">Number 2 · the rain bucket</span>
+    <p>Think of a leaky bucket. Every 16 days it keeps 38% of what it held, and the new rain is poured in. So it records "how much has it rained lately", with recent rain counting most. Here is 100 mm of rain falling once, then nothing:</p>
+    <div class="bucket" aria-label="Bucket level after a single 100 mm downpour: 100, 38, 14, 5, 2 mm">
+      <div class="col"><span class="v">100</span><div class="bar" style="height:100%"></div></div>
+      <div class="col"><span class="v">38</span><div class="bar" style="height:38%"></div></div>
+      <div class="col"><span class="v">14</span><div class="bar" style="height:14.4%"></div></div>
+      <div class="col"><span class="v">5</span><div class="bar" style="height:5.5%"></div></div>
+      <div class="col"><span class="v">2</span><div class="bar" style="height:2.1%"></div></div>
+    </div>
+    <div class="bucket-x"><span>day 0</span><span>day 16</span><span>day 32</span><span>day 48</span><span>day 64</span></div>
+    <p class="muted">The bucket forgets fast. The longer memory lives in the grass itself: once grass has grown, it takes about five weeks for half of a green or brown spell to fade.</p>
+  </div>
+  <p>The bucket is worked out directly from the rain records. The model never has to guess it. That matters later.</p>
+
+  <h3>What goes in, what comes out</h3>
+  <div class="flow">
+    <div class="col">
+      <div class="chip"><b>State</b>Greenness now</div>
+      <div class="chip"><b>State</b>Rain bucket</div>
+      <div class="chip"><b>Input</b>Rain in the next 16 days</div>
+      <div class="chip"><b>Context</b>Time of year, the 5 × 5 squares around it, and the patch type</div>
+    </div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="rule">
+      <h3>The rule</h3>
+      <p>A small neural network, the same one for all 25,600 squares</p>
+    </div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="col">
+      <div class="chip out-guess"><b>Output</b>Best guess for greenness in 16 days</div>
+      <div class="chip out-spread"><b>Output</b>How unsure it is (the spread)</div>
+    </div>
+  </div>
+  <p>"Patch type" is three fixed facts about each square: how green it usually is, how much its greenness swings over a year, and how much rain it usually gets. Two squares with the same facts and the same current state get the same forecast.</p>
+  <p>The spread changes too. After heavy rain more outcomes are possible, so the model widens its range. An extra 100 mm of rain makes the range about 21% wider.</p>
+
+  <div class="key">
+    <span class="eyebrow">The one equation to remember</span>
+    <p class="equation">greenness in 16 days = greenness now + <span class="t-guess">expected change</span> + <span class="t-left">leftover</span></p>
+    <p>The expected change is what the rule predicts. The leftover is everything the rule didn't see coming.</p>
+  </div>
+
+  <h3>Four contestants</h3>
+  <p>The paper tries four versions of the rule, each a bit more powerful than the last.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Name</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td>M0</td><td>Ignores rain completely. Like the usual shortcut: it only knows the past.</td></tr>
+      <tr><td>M1</td><td>Adds rain, but every input just adds up in a straight line.</td></tr>
+      <tr><td>M1.5</td><td>Adds a hand-drawn S-shaped curve: a little rain does little, more rain helps a lot, then it maxes out.</td></tr>
+      <tr class="win"><td>M2</td><td>Adds a small neural network (64 neurons) on top of M1, free to learn any shape it needs.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Each one learns by guessing each next 16-day step and being scored on how well its guess, with its spread, matched what the satellite saw. It never practises long forecasts. So doing well three months ahead is a real test, not something it was trained for.</p>
+  <div class="stats">
+    <div class="stat"><span class="big num">23%</span><span>less error over three months than the rain-blind M0, in years it never saw</span></div>
+    <div class="stat"><span class="big num">13%</span><span>less error than the hand-drawn S-curve, same test</span></div>
+    <div class="stat"><span class="big num">17% · 8%</span><span>the same two wins on Area B, land it never saw</span></div>
+  </div>
+  <p>A surprise: the S-curve model learned to switch its own curve off. The effect of rain isn't one simple shape. The same rain does different things depending on how green the patch already is, the time of year, and the type of land. The neural network can learn those combinations. A single curve can't.</p>
+</section>
+
+<section>
+  <span class="eyebrow">Running it backwards</span>
+  <h2>Finding the leftover</h2>
+  <p>Normally you feed a model inputs and get a forecast. But here we also know what actually happened, because the satellite saw it. So we can run the equation backwards:</p>
+  <div class="key">
+    <p class="equation"><span class="t-left">leftover</span> = (what happened − <span class="t-guess">best guess</span>) ÷ spread</p>
+  </div>
+  <p>We know greenness now, we know the rain, and the bucket comes straight from the rain. The leftover is the only unknown, so there is exactly one answer. One number per square, every 16 days.</p>
+  <p>Dividing by the spread puts the leftover in the model's own units. A leftover of −1 means "browner than expected by a typical miss". A leftover of −3 means "something unusual happened here".</p>
+  <p>What ends up in the leftover? Anything the rule can't see: cattle, fire, clearing, fences. But also mistakes: errors in the rain data, errors in the model, and noise from the satellite. The paper assumes the data errors and noise even out over a lot of data.</p>
+</section>
+
+<section>
+  <span class="eyebrow">What if</span>
+  <h2>Re-run the season with normal rain</h2>
+  <p>Now the useful part. Once you have each step's leftover, you can replay the season with different rain:</p>
+  <ul class="plain">
+    <li>Keep the leftovers exactly as found.</li>
+    <li>Swap the real rain for normal rain for that time of year.</li>
+    <li>Run the rule forward again, adding the same leftovers back in at each step.</li>
+  </ul>
+  <p>What comes out is the land under normal rain, with everything else that happened kept the same. Put the real rain back in and you get exactly what the satellite saw, which is a good check that nothing was lost. Researchers call this a <em>counterfactual</em>: "what would have happened if".</p>
+</section>
+</div>
+
+<div class="wide">
+  <div class="lab" id="lab">
+    <div class="lab-head">
+      <h3>Try it on one patch of grass</h3>
+      <span class="toy-tag">Simplified model</span>
+    </div>
+    <p class="muted" style="font-size:.95rem">This is a cut-down copy of the model so you can play with it. It uses a simple straight-line rule tuned to behave like the real one, not the trained neural network. Pick a season, then hide something in it. The model only sees the rain and the satellite. Can it find what you hid?</p>
+    <div class="presets" role="group" aria-label="Example seasons">
+      <button type="button" data-p="normal">Normal year</button>
+      <button type="button" data-p="drought">Drought</button>
+      <button type="button" data-p="graze">Drought + overgrazing</button>
+      <button type="button" data-p="fire">Good rain, then a fire</button>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <label for="rainPct">Season rain <span class="val" id="rainVal">65% of normal</span></label>
+        <input type="range" id="rainPct" min="0" max="200" step="5" value="65">
+      </div>
+      <div class="ctl">
+        <span class="lbl" id="evLbl">Hidden event</span>
+        <div class="seg" role="group" aria-labelledby="evLbl" id="evSeg">
+          <button type="button" data-v="none">Nothing</button>
+          <button type="button" data-v="graze">Overgrazing from day 16</button>
+          <button type="button" data-v="fire">Fire, days 32–48</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <span class="lbl" id="stLbl">Season starts</span>
+        <div class="seg" role="group" aria-labelledby="stLbl" id="stSeg">
+          <button type="button" data-v="-0.055">Browner than normal</button>
+          <button type="button" data-v="0">Normal</button>
+          <button type="button" data-v="0.05">Greener</button>
+        </div>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i class="sw" style="border-color:var(--ink)"></i>What the satellite saw</span>
+      <span><i class="sw" style="border-color:var(--rain)"></i>Expected from the rain that fell</span>
+      <span><i class="sw box" style="background:var(--band)"></i>Model's spread</span>
+      <span><i class="sw" style="border-color:var(--cf)"></i>Normal rain, same leftovers</span>
+      <span><i class="sw dash" style="border-color:var(--muted)"></i>Rain-blind shortcut</span>
+    </div>
+    <div class="chart-wrap"><svg id="chart" viewBox="0 0 600 470" role="img" aria-label="Greenness, rain and leftover over one season"></svg></div>
+    <div class="split" id="split" aria-live="polite"></div>
+    <p class="readout" id="readout"></p>
+  </div>
+</div>
+
+<div class="wrap">
+<section>
+  <span class="eyebrow">The real thing</span>
+  <h2>The 2022 drought</h2>
+  <p>In March to May 2022 the rain was 124 mm below normal. By the end of the season Area A was 0.17 NDVI browner than normal. The rain-blind shortcut expected it to recover, so it would blame the whole 0.17 on the land's managers.</p>
+  <p>The real model splits it up:</p>
+  <div class="stats">
+    <div class="stat"><span class="big num">0.07</span><span>from the rain that failed</span></div>
+    <div class="stat"><span class="big num">0.07</span><span>leftover: not explained by rain</span></div>
+    <div class="stat"><span class="big num">0.03</span><span>the season started browner than normal</span></div>
+  </div>
+  <p>Re-run under normal rain with the same leftovers, the land still ends 0.10 below normal. That orange line is what a carbon credit should be measured against. The gap between it and what happened is the rain's share, which is what drought insurance should pay for.</p>
+  <figure>
+    <div class="fig-img"><img src="fig_residual.png" alt="Two panels of greenness over 96 days. Left, 2020 with near-normal rain: all lines stay close. Right, 2022 drought: the rain-blind line expects recovery, the rain-aware blue and orange lines fall to about minus 0.10, and the observed black line falls further to about minus 0.17." loading="lazy"></div>
+    <figcaption>From the paper. Box averages for Area A in years the model never trained on. <strong>Left:</strong> October to December 2020, rain close to normal, so there is little for the rain to explain. <strong>Right:</strong> the 2022 drought. The grey shortcut expects recovery, the model expects about half the fall, and the land fell further.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <span class="eyebrow">Sensitivities</span>
+  <h2>Asking "what if a bit more?"</h2>
+  <p>Because the model is a formula, you can ask how its forecast changes when you nudge one input. This is a derivative, the slope from calculus, and the computer works it out exactly. The paper borrows names from finance for these. Here are the main two.</p>
+  <div class="twin">
+    <div class="mini">
+      <h3>Δ Delta: what extra rain does</h3>
+      <svg id="deltaChart" viewBox="0 0 320 210" role="img" aria-label="Delta: extra greenness after 100 mm of extra rain, by days after. 0.029 at 16 days, peaking at 0.075 at 32 days, falling to 0.036 at 96 days."></svg>
+      <p class="muted" style="font-size:.95rem">Add 100 mm of rain in the long rains. The extra greenness peaks a month later at about 0.075, then about half has faded after three months. Δ was positive for every square.</p>
+    </div>
+    <div class="mini">
+      <h3>Θ Theta: how long a shock lasts</h3>
+      <svg id="thetaChart" viewBox="0 0 320 210" role="img" aria-label="Theta: share of a greenness anomaly still there, by days. 0.70 at 16 days, 0.50 at 32, 0.26 at 64, 0.15 at 96."></svg>
+      <p class="muted" style="font-size:.95rem">Start a square browner than normal and hold the rain fixed. Half the difference is gone in about 35 days. A simple check straight from the data gives 38 days.</p>
+    </div>
+  </div>
+  <p>The model gives every square its own Δ, worked out from that square's current state. Does it pick out the squares that really respond more? Sort the squares into thirds by Δ: the top third really did green about <strong>twice as much</strong> per 100 mm as the bottom third, in unseen years and on unseen land.</p>
+  <p>One more finding: how much a square responds depends on its <em>current state</em>, not just on which square it is. A fixed map of Δ averaged over past years did no better than using one number for every square.</p>
+  <p>Why would anyone care? An insurer holding a contract on a square is exposed to the rain there. Δ says exactly how exposed, square by square. That is what you need to price the contract fairly.</p>
+</section>
+
+<section>
+  <span class="eyebrow">Spotting trouble</span>
+  <h2>Telling drought from damage</h2>
+  <p>The leftover is also an alarm. A drought doesn't set it off: low rain predicts browning, so browning isn't a surprise. A fire or a bulldozer does set it off: the land drops for a reason the rain can't explain.</p>
+  <p>The paper tunes each method so it raises a false alarm on 5% of normal land. Then it counts alarms during the two drought seasons, when the land browned but nothing burned. The rain-blind shortcut raised alarms on <strong>24%</strong> of squares. The model raised them on <strong>5%</strong>, the same as in an ordinary season.</p>
+  <figure>
+    <div class="fig-img"><img src="fig_fire.png" alt="Three maps of the same area. Left: the model's leftover shows a dark red patch inside the outlined area. Middle: the rain-blind score shows nothing special inside the outline. Right: a satellite photo showing the outlined area is a cleared field." loading="lazy"></div>
+    <figcaption>From the paper. An area a fire map flagged as burned on 17 January 2021, outlined. <strong>Left:</strong> the model's leftover shows it clearly in red. <strong>Middle:</strong> the rain-blind score can't see it. <strong>Right:</strong> a photo ten days later shows most of the outline is a harvested field on irrigated farmland. So "burned" here was mostly a harvest. Either way, the land changed for a reason that wasn't rain, and the leftover caught it.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <span class="eyebrow">The name</span>
+  <h2>Why "Black–Scholes"?</h2>
+  <p>An <em>option</em> is a contract that lets you buy a share at a fixed price at a later date. In 1973 Fischer Black and Myron Scholes published a formula for what an option is worth. You feed it the share price, the fixed price, the time left, the interest rate, and the <em>volatility</em>: how jumpy the share price is.</p>
+  <p>You can't observe volatility directly. So traders run the formula backwards: take the price people are paying for the option, and solve for the volatility that would give that price. That is called <em>implied volatility</em>. The formula's slopes, called "the Greeks" (Delta, Theta and others), tell traders how much risk they are holding.</p>
+  <p>This paper does the same moves with grass:</p>
+  <div class="tbl">
+  <table class="bs">
+    <thead><tr><th>Finance</th><th>Grassland</th></tr></thead>
+    <tbody>
+      <tr><td>The option price you can see</td><td>The greenness the satellite sees</td></tr>
+      <tr><td>The Black–Scholes formula</td><td>The learned rule</td></tr>
+      <tr><td>Implied volatility, solved for</td><td>The leftover, solved for</td></tr>
+      <tr><td>The Greeks</td><td>Δ, Θ, and how rain changes the spread</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The match isn't perfect. Implied volatility is one number for the whole contract. The leftover is a fresh number every 16 days. Black–Scholes also assumes jumpiness never changes. Here the spread grows with rain, and the model learns that on its own.</p>
+</section>
+
+<section>
+  <span class="eyebrow">Limits</span>
+  <h2>What this doesn't show yet</h2>
+  <ul class="plain">
+    <li><strong>The leftover isn't all the land's managers.</strong> It also holds the model's own mistakes. In very deep droughts, more than 60 mm below normal, the model under-reacts. So part of the 2022 leftover is the model, not the land.</li>
+    <li><strong>Small test.</strong> Two 45 km areas in one region of Kenya. It is a proof of concept.</li>
+    <li><strong>Gaps in the data.</strong> The satellite record is missing 61 days at the end of 2021, in the middle of a drought season.</li>
+    <li><strong>Rain data has errors.</strong> CHIRPS estimates rain partly from satellites and can be wrong for a given square.</li>
+  </ul>
+</section>
+
+<footer>
+  <p>Based on the workshop paper <em>Black–Scholes for the land: modelling savannah response to rain as a dynamic world model</em> (2026). Numbers in the "real thing", sensitivities and trouble-spotting sections come from the paper. The interactive patch uses a simplified rule with realistic settings for illustration.</p>
+</footer>
+</div>
+
+<script>
+(function(){
+  // ---------- hero strip (2022 observed box mean, from the paper's figure)
+  var obs22=[-0.055,-0.059,-0.075,-0.127,-0.138,-0.178,-0.168];
+  var strip=document.getElementById('strip');
+  obs22.slice(1).forEach(function(v,i){
+    var d=document.createElement('div');
+    var t=Math.min(1,Math.abs(v)/0.18);
+    // blend from a neutral olive toward dry ochre-brown as the anomaly deepens
+    var c0=[110,140,70], c1=[150,104,40];
+    var c=c0.map(function(x,k){return Math.round(x+(c1[k]-x)*t);});
+    d.style.background='rgb('+c.join(',')+')';
+    d.textContent=v.toFixed(2);
+    strip.appendChild(d);
+  });
+
+  // ---------- toy model
+  var NORMAL=[45,70,85,70,45,25];   // mm per 16-day window, long rains
+  var LAM=0.38, RHO=0.73, BETA=0.00043, W0=20, H=6;
+  var EVENTS={none:[0,0,0,0,0,0], graze:[0,-0.02,-0.02,-0.02,-0.02,-0.02], fire:[0,0,-0.09,0.01,0.01,0]};
+  function sig(r){return 0.022+0.00006*r;}
+  function bucket(rain){var w=[W0];for(var t=0;t<H;t++)w.push(LAM*w[t]+rain[t]);return w;}
+
+  function simulate(s){
+    var rain=NORMAL.map(function(x){return x*s.pct/100;});
+    var wA=bucket(rain), wN=bucket(NORMAL);
+    function drive(t){return BETA*((wA[t]+rain[t])-(wN[t]+NORMAL[t]));}
+    var shocks=EVENTS[s.event];
+    var obs=[s.a0], exp=[s.a0], v=[0], cf=[s.a0], hist=[s.a0], eps=[];
+    for(var t=0;t<H;t++){
+      obs.push(RHO*obs[t]+drive(t)+shocks[t]);
+      var mu=RHO*obs[t]+drive(t);
+      eps.push((obs[t+1]-mu)/sig(rain[t]));          // back out the leftover
+      exp.push(RHO*exp[t]+drive(t));
+      v.push(RHO*RHO*v[t]+sig(rain[t])*sig(rain[t]));
+      cf.push(RHO*cf[t]+sig(NORMAL[t])*eps[t]);       // normal rain, same leftover
+      hist.push(RHO*hist[t]);
+    }
+    return {rain:rain,obs:obs,exp:exp,sd:v.map(Math.sqrt),cf:cf,hist:hist,eps:eps};
+  }
+
+  var state={pct:65,event:'graze',a0:-0.055};
+  var PRESETS={normal:{pct:100,event:'none',a0:0},drought:{pct:65,event:'none',a0:-0.055},
+               graze:{pct:65,event:'graze',a0:-0.055},fire:{pct:130,event:'fire',a0:0}};
+
+  var NS='http://www.w3.org/2000/svg';
+  function el(name,attrs,parent,text){
+    var e=document.createElementNS(NS,name);
+    for(var k in attrs)e.setAttribute(k,attrs[k]);
+    if(text!=null)e.textContent=text;
+    if(parent)parent.appendChild(e);
+    return e;
+  }
+  function fmt(x){var s=x.toFixed(2);return (x>0.0049?'+':'')+(s==='-0.00'?'0.00':s);}
+
+  function drawChart(r){
+    var svg=document.getElementById('chart');
+    while(svg.firstChild)svg.removeChild(svg.firstChild);
+    var L=58,R=14,Wd=600;
+    function x(t){return L+t*(Wd-L-R)/H;}
+    var step=(Wd-L-R)/H;
+    // panel 1: greenness
+    var y0=26,y1=236,lo=-0.25,hi=0.20;
+    function y(v){v=Math.max(lo,Math.min(hi,v));return y1-(v-lo)/(hi-lo)*(y1-y0);}
+    el('text',{x:L,y:14,'class':'lab-title'},svg,'Greenness compared with normal (NDVI)');
+    for(var k=-5;k<=4;k++){
+      var g=k*0.05, gy=y(g);
+      el('line',{x1:L,x2:Wd-R,y1:gy,y2:gy,stroke:'var(--line)','stroke-width':k===0?1.4:0.6},svg);
+      if(k%2===0)el('text',{x:L-8,y:gy+4,'text-anchor':'end'},svg,k===0?'0':(k>0?'+':'')+g.toFixed(1));
+    }
+    el('text',{x:Wd-R,y:y(0)-5,'text-anchor':'end'},svg,'normal');
+    // band
+    var top=[],bot=[];
+    for(var t=0;t<=H;t++){top.push(x(t)+','+y(r.exp[t]+r.sd[t]));bot.unshift(x(t)+','+y(r.exp[t]-r.sd[t]));}
+    el('polygon',{points:top.concat(bot).join(' '),fill:'var(--band)',stroke:'none'},svg);
+    function line(arr,stroke,w,dash){
+      var pts=arr.map(function(v,t){return x(t)+','+y(v);}).join(' ');
+      var a={points:pts,fill:'none',stroke:stroke,'stroke-width':w,'stroke-linejoin':'round'};
+      if(dash)a['stroke-dasharray']=dash;
+      el('polyline',a,svg);
+    }
+    line(r.hist,'var(--muted)',1.6,'5 4');
+    line(r.exp,'var(--rain)',2.6);
+    line(r.cf,'var(--cf)',2.6);
+    line(r.obs,'var(--ink)',2.4);
+    r.obs.forEach(function(v,t){el('circle',{cx:x(t),cy:y(v),r:3.6,fill:'var(--ink)'},svg);});
+    // end labels
+    // panel 2: rain bars
+    var ry0=286,ry1=356,rmax=180;
+    el('text',{x:L,y:ry0-10,'class':'lab-title'},svg,'Rain in each 16-day window (mm)');
+    el('line',{x1:L,x2:Wd-R,y1:ry1,y2:ry1,stroke:'var(--line)'},svg);
+    el('text',{x:L-8,y:ry1+4,'text-anchor':'end'},svg,'0');
+    el('text',{x:L-8,y:ry1-(100/rmax)*(ry1-ry0)+4,'text-anchor':'end'},svg,'100');
+    el('line',{x1:L,x2:Wd-R,y1:ry1-(100/rmax)*(ry1-ry0),y2:ry1-(100/rmax)*(ry1-ry0),stroke:'var(--line)','stroke-width':0.6},svg);
+    for(var t=0;t<H;t++){
+      var cx=x(t)+step/2, bw=step*0.5;
+      var hn=NORMAL[t]/rmax*(ry1-ry0), ha=Math.min(rmax,r.rain[t])/rmax*(ry1-ry0);
+      el('rect',{x:cx-bw/2,y:ry1-hn,width:bw,height:hn,fill:'var(--ghost)',stroke:'var(--rain)','stroke-width':1,'stroke-dasharray':'3 3'},svg);
+      el('rect',{x:cx-bw/2+4,y:ry1-ha,width:bw-8,height:ha,fill:'var(--rain)'},svg);
+    }
+    el('text',{x:Wd-R,y:ry0-10,'text-anchor':'end'},svg,'dashed = normal');
+    // panel 3: leftover
+    var ly0=396,ly1=446,lmid=(ly0+ly1)/2,lmax=4;
+    el('text',{x:L,y:ly0-12,'class':'lab-title'},svg,'Leftover the model found (in spreads)');
+    el('line',{x1:L,x2:Wd-R,y1:lmid,y2:lmid,stroke:'var(--muted)','stroke-width':0.8},svg);
+    el('text',{x:L-8,y:ly0+4,'text-anchor':'end'},svg,'+4');
+    el('text',{x:L-8,y:lmid+4,'text-anchor':'end'},svg,'0');
+    el('text',{x:L-8,y:ly1+4,'text-anchor':'end'},svg,'−4');
+    for(var t=0;t<H;t++){
+      var e=Math.max(-lmax,Math.min(lmax,r.eps[t]));
+      var cx=x(t)+step/2, bw=step*0.4, h=Math.abs(e)/lmax*(ly1-ly0)/2;
+      if(h>0.3)el('rect',{x:cx-bw/2,y:e<0?lmid:lmid-h,width:bw,height:h,fill:e<0?'var(--neg)':'var(--pos)'},svg);
+      if(Math.abs(r.eps[t])>0.05)el('text',{x:cx,y:e<0?lmid+h+13:lmid-h-4,'text-anchor':'middle'},svg,r.eps[t].toFixed(1));
+    }
+    // x axis
+    for(var t=0;t<=H;t++)el('text',{x:x(t),y:466,'text-anchor':'middle'},svg,'day '+(16*t));
+  }
+
+  function drawSplit(r){
+    var end=H, total=r.obs[end], rainShare=r.obs[end]-r.cf[end], left=r.obs[end]-r.exp[end];
+    var start=total-rainShare-left;
+    var rows=[['From the rain',rainShare,'var(--rain)'],['Leftover',left,'var(--cf)'],['Where it started',start,'var(--muted)'],['Total at day 96',total,'var(--ink)']];
+    var box=document.getElementById('split');
+    box.innerHTML='';
+    var head=document.createElement('p');
+    head.innerHTML='<strong>How the end-of-season greenness splits up</strong> <span class="muted">(left of the line = browner)</span>';
+    box.appendChild(head);
+    rows.forEach(function(rw,i){
+      var row=document.createElement('div');row.className='split-row'+(i===3?' total':'');
+      var lab=document.createElement('span');lab.textContent=rw[0];
+      var tr=document.createElement('div');tr.className='track';
+      var f=document.createElement('div');f.className='fill';
+      var w=Math.min(50,Math.abs(rw[1])/0.25*50);
+      f.style.width=w+'%';f.style.background=rw[2];
+      if(rw[1]<0)f.style.right='50%';else f.style.left='50%';
+      tr.appendChild(f);
+      var n=document.createElement('span');n.className='num';n.textContent=fmt(rw[1]);
+      row.appendChild(lab);row.appendChild(tr);row.appendChild(n);box.appendChild(row);
+    });
+    // sentence
+    function amt(x){return Math.abs(x).toFixed(2);}
+    var s='';
+    if(Math.abs(total)<0.005)s='The patch ended the season at normal greenness. ';
+    else s='The patch ended '+amt(total)+' '+(total<0?'browner':'greener')+' than normal. ';
+    if(Math.abs(rainShare)<0.005)s+='The rain was close enough to normal that it explains almost nothing. ';
+    else s+='The rain '+(rainShare<0?'pulled it down':'pushed it up')+' by '+amt(rainShare)+'. ';
+    if(state.event==='none'){
+      s+='You hid nothing, so the leftover is zero and the orange line sits on the grey one: under normal rain, this patch would have been normal.';
+    }else{
+      s+='The leftover, '+amt(left)+(left<0?' of browning':' of greening')+', is the part the rain can’t explain. ';
+      s+=state.event==='graze'?'The model never saw the cattle, but the leftover bars show a steady drag from day 16: that’s them.':'The model never saw the fire, but the leftover bars show one big drop between days 32 and 48: that’s it.';
+      s+=' The orange line is the fair baseline: normal rain, with what you hid still in it.';
+    }
+    document.getElementById('readout').textContent=s;
+  }
+
+  function syncControls(){
+    document.getElementById('rainPct').value=state.pct;
+    document.getElementById('rainVal').textContent=state.pct+'% of normal ('+Math.round(NORMAL.reduce(function(a,b){return a+b;},0)*state.pct/100)+' mm)';
+    document.querySelectorAll('#evSeg button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.v===state.event));});
+    document.querySelectorAll('#stSeg button').forEach(function(b){b.setAttribute('aria-pressed',String(parseFloat(b.dataset.v)===state.a0));});
+  }
+  function render(){syncControls();var r=simulate(state);drawChart(r);drawSplit(r);}
+
+  document.getElementById('rainPct').addEventListener('input',function(e){state.pct=+e.target.value;render();});
+  document.querySelectorAll('#evSeg button').forEach(function(b){b.addEventListener('click',function(){state.event=b.dataset.v;render();});});
+  document.querySelectorAll('#stSeg button').forEach(function(b){b.addEventListener('click',function(){state.a0=parseFloat(b.dataset.v);render();});});
+  document.querySelectorAll('.presets button').forEach(function(b){b.addEventListener('click',function(){var p=PRESETS[b.dataset.p];state.pct=p.pct;state.event=p.event;state.a0=p.a0;render();});});
+  render();
+
+  // ---------- sensitivity charts (values from the paper)
+  function mini(id,pts,ymax,ticks,xlab,fmtv,bars,half){
+    var svg=document.getElementById(id);
+    var L=40,R=10,T=14,B=176,Wd=320;
+    function x(d){return L+12+(d/96)*(Wd-L-R-24);}
+    function y(v){return B-(v/ymax)*(B-T);}
+    ticks.forEach(function(tk){
+      el('line',{x1:L,x2:Wd-R,y1:y(tk),y2:y(tk),stroke:'var(--line)','stroke-width':tk===0?1.2:0.6},svg);
+      el('text',{x:L-6,y:y(tk)+4,'text-anchor':'end'},svg,fmtv(tk));
+    });
+    if(half){
+      el('line',{x1:L,x2:Wd-R,y1:y(0.5),y2:y(0.5),stroke:'var(--cf)','stroke-dasharray':'4 3','stroke-width':1.2},svg);
+      el('text',{x:Wd-R,y:y(0.5)-5,'text-anchor':'end',style:'fill:var(--cf)'},svg,'half gone');
+    }
+    if(bars){
+      pts.forEach(function(p){
+        el('rect',{x:x(p[0])-10,y:y(p[1]),width:20,height:B-y(p[1]),fill:'var(--rain)'},svg);
+        el('text',{x:x(p[0]),y:y(p[1])-5,'text-anchor':'middle',style:'fill:var(--ink)'},svg,p[1].toFixed(3).replace(/^0/,''));
+      });
+    }else{
+      el('polyline',{points:pts.map(function(p){return x(p[0])+','+y(p[1]);}).join(' '),fill:'none',stroke:'var(--ink)','stroke-width':2.2},svg);
+      pts.forEach(function(p){
+        el('circle',{cx:x(p[0]),cy:y(p[1]),r:3.8,fill:'var(--ink)'},svg);
+        el('text',{x:p[0]>80?x(p[0]):x(p[0])+6,y:y(p[1])-9,'text-anchor':p[0]>80?'middle':'start'},svg,p[1].toFixed(2));
+      });
+    }
+    [0,16,32,48,64,80,96].forEach(function(d){el('text',{x:x(d),y:B+16,'text-anchor':'middle'},svg,d);});
+    el('text',{x:(L+Wd)/2,y:B+32,'text-anchor':'middle'},svg,xlab);
+  }
+  mini('deltaChart',[[16,.029],[32,.075],[48,.073],[64,.060],[80,.047],[96,.036]],0.08,[0,0.02,0.04,0.06,0.08],
+       'days after 100 mm extra rain',function(v){return v===0?'0':v.toFixed(2).replace(/^0/,'');},true,false);
+  mini('thetaChart',[[0,1],[16,.70],[32,.50],[64,.26],[96,.15]],1,[0,0.25,0.5,0.75,1],
+       'days after the shock',function(v){return v===0?'0':(v*100)+'%';},false,true);
+})();
+</script>

@@ -1,6 +1,16 @@
 .venv/
+.venv-*/
 data/
-runs/
+# Run outputs stay local; each run's pre-registration and write-up are tracked
+runs/*
+!runs/*/
+runs/*/*
+!runs/*/PREREG.md
+!runs/*/PREREG.sha256
+!runs/*/RESULT.md
+!runs/*/DEVIATIONS.md
+!runs/*/LOG.md
+!runs/*/FREEZE.json
 __pycache__/
 *.pyc
 paper/*.aux
@@ -11,3 +21,19 @@ paper/*.blg
 paper/*.pdf
 paper/template/
 .DS_Store
+*.synctex.gz
+*.tar.gz
+paper/arxiv/main.pdf
+paper/figs/slide_*.png
+
+# AgriAI PDFs copied here by paper/build.sh
+paper/agriai/*.pdf
+
+# Kept local: OpenReview reviews (repo is public) and WDPA data (no redistribution)
+revision/openreview_*.json
+wdpa.json
+
+# latexmk and editor files
+*.fls
+*.fdb_latexmk
+.vscode/

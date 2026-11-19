@@ -1,0 +1,16 @@
+% Skill table: % less error (CRPS) than history alone. Not yet \input into main.tex.
+% Sources: runs/20260914_1708_pipeline_h100_fairfight, runs/20261006_1759_baselines (revision/REVISION.md item 4).
+\begin{table}[t]\centering\small\setlength{\tabcolsep}{4pt}
+\caption{How much less error than history alone? Percent reduction in CRPS, given the rain that fell (attribution, not forecasting). Best per column in bold.}\label{tab:skill}
+\begin{tabular}{lcccc}\toprule
+ & \multicolumn{2}{c}{Unseen years} & \multicolumn{2}{c}{Unseen landscape}\\
+Model & 16 days & 3 months & 16 days & 3 months\\\midrule
+History only & 0 & 0 & 0 & 0\\
+Linear & 1 & 11 & 5 & 10\\
+Hand-written S-curve & 1 & 11 & 5 & 10\\
+Gradient-boosted trees & 5 & 22 & 9 & \textbf{26}\\
+M2 + memory (GRU) & 5 & 21 & 10 & 21\\
+\textbf{M2 (ours)} & \textbf{9} & \textbf{23} & \textbf{10} & 17\\\midrule
+M2 with rain removed & 2 & $-1$ & 2 & $-3$\\\bottomrule
+\end{tabular}
+\end{table}

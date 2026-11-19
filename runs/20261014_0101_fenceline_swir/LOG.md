@@ -1,0 +1,294 @@
+# Fence-line SWIR test: audit log
+
+Append-only. One line per event, UTC. Machine-readable twin: `log.jsonl`.
+
+- `2026-10-13T14:02:09Z` **00_init** start
+    - script: revision/fenceline_swir/s00_init.py
+    - script_sha256: 71808d4288a884cfc4e5a9e4eb3378d670b7508e1f75a14ed488e6e4e86e65d6
+    - fs_common_sha256: fbab2a24207efd2a3be1df71e4f497108073a594be401b5135b2db73dee3cd15
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T14:02:09Z` **00_init** environment
+    - platform: macOS-26.6.2-arm64-arm-64bit
+    - numpy: 2.2.6
+    - scipy: 1.15.3
+    - rasterio: 1.4.4
+    - venv: /Users/tompitts/dphil/ProjectB/.venv/bin/python
+- `2026-10-13T14:02:09Z` **00_init** git state at start
+    - head: 56c7d66d3afd8a671dd1f2e1bc62d12d810a950f
+    - status_short: ?? explainer/revision_map.html
+?? paper/agriai/
+?? revision/AAAI_STRATEGY.md
+?? revision/fenceline/
+?? revision/fenceline_swir/
+?? wdpa.json
+- `2026-10-13T14:02:09Z` **00_init** previous run (design source) verified against its FREEZE.json, read-only
+    - runs/20261013_2150_fenceline/design/design.npz: 189e16b06003fd67537605d630dc655eb62343158f0bdc89b1dbddcd4c7e3aa9
+    - runs/20261013_2150_fenceline/design/design_meta.json: 388207e2b60436b26e6ecb9ba4389f490d263cc7d286e97163783d64abbd777c
+    - runs/20261013_2150_fenceline/inputs/exposure/exposure.csv: 38fed2946cfa05bcfbd55f140db6590f2f7c88bfac6b48c1bf68eb9b551f5733
+    - runs/20261013_2150_fenceline/inputs/exposure/years.csv: 04491632db2fec5dab28cbbf6724407944c2a046220afeb54e19cc2da2d54444
+    - runs/20261013_2150_fenceline/outputs/results.json: ff334c9001c0f29dc6d32d124614e7459352cd4f6796c3be79acfd73ea70a365
+    - runs/20261013_2150_fenceline/FREEZE.json: cf9420af66a3ff4f65dfd9b691d88ee0135f9a4971750682a14897651943c00b
+- `2026-10-13T14:02:09Z` **00_init** read-only inputs hashed
+    - data_B: data/B/built.npz sha256=f66f0ef7acd2ed918f4165b1122220f49c5d4f245c3706b869aa6f1aaf9046cc
+- `2026-10-13T14:02:09Z` **prereg** PREREG.md written before any reflectance download
+    - sha256: 6b24d3bbc1c1af8beda8b8d10aaa83167c3364cf5b6762a7ea555fecf1cce73d
+- `2026-10-13T14:02:09Z` **00_init** blinding statement
+    - note: No MODIS surface-reflectance data for Box B has been downloaded or viewed in this project before this run. The download step logs counts and coverage only; indices are computed only after FREEZE.json.
+- `2026-10-13T14:02:44Z` **01_download** start
+    - script: revision/fenceline_swir/s01_download.py
+    - script_sha256: cc8c4d97a7435e6ad2baa552406c219ba0d839204acf99aa1b2a413b4fa462b6
+    - fs_common_sha256: fbab2a24207efd2a3be1df71e4f497108073a594be401b5135b2db73dee3cd15
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T14:03:05Z` **01_download** STAC search done
+    - n_items: 2121
+    - collection: modis-09A1-061
+- `2026-10-13T14:04:35Z` **dryrun** DRY RUN in scratch on SYNTHETIC reflectance (random arrays, 1058 8-day dates): s01b_freeze, s02_outcomes, s03_analysis run end to end; no real outcome computed or viewed; outputs discarded
+    - scratch: scratchpad/fs_dry
+- `2026-10-13T14:07:12Z` **01_download** progress
+    - done: 250
+    - of: 2121
+    - seconds: 247
+- `2026-10-13T14:10:58Z` **01_download** progress
+    - done: 500
+    - of: 2121
+    - seconds: 473
+- `2026-10-13T14:14:42Z` **01_download** progress
+    - done: 750
+    - of: 2121
+    - seconds: 697
+- `2026-10-13T14:18:03Z` **01_download** progress
+    - done: 1000
+    - of: 2121
+    - seconds: 898
+- `2026-10-13T14:21:10Z` **01_download** progress
+    - done: 1250
+    - of: 2121
+    - seconds: 1085
+- `2026-10-13T14:24:15Z` **01_download** progress
+    - done: 1500
+    - of: 2121
+    - seconds: 1270
+- `2026-10-13T14:27:12Z` **01_download** progress
+    - done: 1750
+    - of: 2121
+    - seconds: 1447
+- `2026-10-13T14:30:09Z` **01_download** progress
+    - done: 2000
+    - of: 2121
+    - seconds: 1624
+- `2026-10-13T14:31:34Z` **01_download** fetch finished
+    - ok: 2078
+    - failed: 0
+    - seconds: 1709
+    - failed_ids: []
+- `2026-10-13T14:31:44Z` **01_download** terra saved
+    - file: runs/20261014_0101_fenceline_swir/inputs/raw/mod09a1_terra.npz
+    - sha256: b4ee93cd5c795f113444413fd0a4b7904e77a325ef255a982551ea1e4fcc3471
+    - n_dates: 1034
+    - first: 2002-12-27
+    - last: 2025-12-27
+    - dates_per_year: {2002: 1, 2003: 46, 2004: 46, 2005: 46, 2006: 46, 2007: 46, 2008: 46, 2009: 46, 2010: 46, 2011: 46, 2012: 46, 2013: 46, 2014: 46, 2015: 46, 2016: 46, 2017: 46, 2018: 46, 2019: 46, 2020: 46, 2021: 46, 2022: 41, 2023: 44, 2024: 46, 2025: 28}
+    - boxwide_clear_fraction_by_year: {2002: 0.216, 2003: 0.912, 2004: 0.896, 2005: 0.93, 2006: 0.903, 2007: 0.9, 2008: 0.912, 2009: 0.943, 2010: 0.896, 2011: 0.929, 2012: 0.901, 2013: 0.864, 2014: 0.925, 2015: 0.915, 2016: 0.912, 2017: 0.934, 2018: 0.861, 2019: 0.877, 2020: 0.868, 2021: 0.923, 2022: 0.918, 2023: 0.868, 2024: 0.879, 2025: 0.972}
+- `2026-10-13T14:31:52Z` **01_download** aqua saved
+    - file: runs/20261014_0101_fenceline_swir/inputs/raw/myd09a1_aqua.npz
+    - sha256: b47e998feaa1b5bb0a19da7b00ea4292287610933c6f01ca4cb7e3822505adc1
+    - n_dates: 1037
+    - first: 2002-12-27
+    - last: 2025-12-27
+    - dates_per_year: {2002: 1, 2003: 46, 2004: 46, 2005: 46, 2006: 46, 2007: 46, 2008: 46, 2009: 46, 2010: 46, 2011: 46, 2012: 46, 2013: 46, 2014: 46, 2015: 46, 2016: 46, 2017: 46, 2018: 46, 2019: 46, 2020: 45, 2021: 46, 2022: 44, 2023: 46, 2024: 45, 2025: 28}
+    - boxwide_clear_fraction_by_year: {2002: 0.774, 2003: 0.739, 2004: 0.78, 2005: 0.747, 2006: 0.745, 2007: 0.72, 2008: 0.791, 2009: 0.884, 2010: 0.71, 2011: 0.776, 2012: 0.704, 2013: 0.694, 2014: 0.765, 2015: 0.787, 2016: 0.779, 2017: 0.778, 2018: 0.702, 2019: 0.758, 2020: 0.65, 2021: 0.777, 2022: 0.758, 2023: 0.734, 2024: 0.721, 2025: 0.792}
+- `2026-10-13T14:32:09Z` **01b_freeze** start
+    - script: revision/fenceline_swir/s01b_freeze.py
+    - script_sha256: f078c7f176e3087d4e5a119b2eda83e48c1b41ef740cd2d2b67d6952f95a3cc8
+    - fs_common_sha256: fbab2a24207efd2a3be1df71e4f497108073a594be401b5135b2db73dee3cd15
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T14:32:10Z` **01b_freeze** FROZEN
+    - file: runs/20261014_0101_fenceline_swir/FREEZE.json
+    - freeze_sha256: 15e970c2f62ba0db10a88e4a6c1c8626f9364bcb54c75200cb9d626b3b9cfd24
+    - prereg_sha256: 6b24d3bbc1c1af8beda8b8d10aaa83167c3364cf5b6762a7ea555fecf1cce73d
+- `2026-10-13T14:32:10Z` **02_outcomes** start
+    - script: revision/fenceline_swir/s02_outcomes.py
+    - script_sha256: 03d04f12c3b4e46d3633449290ac2a0e46b533ea2b69894c6297f32b0ac87e14
+    - fs_common_sha256: fbab2a24207efd2a3be1df71e4f497108073a594be401b5135b2db73dee3cd15
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T14:32:10Z` **02_outcomes** freeze verified
+    - changed_scripts_declared_in_deviations: []
+- `2026-10-13T14:32:25Z` **02_outcomes** terra indices computed
+    - n_composites: 1034
+    - median_valid_window_composites_main: {2003: 7.0, 2004: 6.0, 2005: 7.0, 2006: 7.0, 2007: 6.0, 2008: 6.0, 2009: 7.0, 2010: 6.0, 2011: 7.0, 2012: 7.0, 2013: 6.0, 2014: 7.0, 2015: 7.0, 2016: 7.0, 2017: 7.0, 2018: 5.0, 2019: 7.0, 2020: 7.0, 2021: 7.0, 2022: 6.0, 2023: 5.0, 2024: 6.0, 2025: 7.0}
+- `2026-10-13T14:32:27Z` **02_outcomes** aqua indices computed
+    - n_composites: 1037
+    - median_valid_window_composites_main: {2003: 2.0, 2004: 2.0, 2005: 2.0, 2006: 2.0, 2007: 2.0, 2008: 2.0, 2009: 2.0, 2010: 2.0, 2011: 2.0, 2012: 2.0, 2013: 2.0, 2014: 2.0, 2015: 2.0, 2016: 2.0, 2017: 2.0, 2018: 1.0, 2019: 2.0, 2020: 1.0, 2021: 2.0, 2022: 1.0, 2023: 1.0, 2024: 1.0, 2025: 2.0}
+- `2026-10-13T14:32:28Z` **02_outcomes** outcomes saved
+    - file: runs/20261014_0101_fenceline_swir/outputs/outcomes.npz
+    - sha256: 1f6ac36dee2eae8e66504c928a1f44122f1cb1466fe8fa9f4dc57ffe8994fa04
+- `2026-10-13T14:32:28Z` **03_analysis** start
+    - script: revision/fenceline_swir/s03_analysis.py
+    - script_sha256: b1fc68c8341712c98f5c451269e3f81b9d91e9d220ac600ffa78ff3862bba427
+    - fs_common_sha256: fbab2a24207efd2a3be1df71e4f497108073a594be401b5135b2db73dee3cd15
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T14:32:28Z` **03_analysis** freeze verified
+    - changed_scripts_declared_in_deviations: []
+- `2026-10-13T14:32:29Z` **03_analysis** placebo set
+    - P: [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2016, 2018, 2019, 2020, 2021, 2022, 2024, 2025]
+    - excluded_for_data: []
+- `2026-10-13T14:32:29Z` **03_analysis** Q1 NDTI Terra (primary)
+    - D_2017: 0.012566056909966967
+    - n_2017: 2697
+    - rank_low: 20
+    - n_placebo: 20
+    - p_low: 0.9523809523809523
+    - placebo_median: -0.0014368690344407555
+    - placebo_min: -0.010037953981187384
+    - placebo_max: 0.016178089836992086
+    - verdict: fail
+- `2026-10-13T14:32:29Z` **03_analysis** Q2 rain-adjusted
+    - rain_dep_2017_mm: -174.85821533203125
+    - slope: -2.0828031257457375e-06
+    - r: -0.04962943120878434
+    - t: 1.5424112565390726
+    - df: 18
+    - p_one_sided: 0.929814379962148
+    - verdict: fail
+- `2026-10-13T14:32:29Z` **03_analysis** Q3 SWIR2 b07 (bare soil)
+    - D_2017: -0.0001624667249905883
+    - rank_high: 11
+    - n_placebo: 20
+    - p_high: 0.5238095238095238
+    - placebo_median: -0.0005340015902888876
+    - verdict: fail
+- `2026-10-13T14:32:29Z` **03_analysis** Q4 NDVI 500 m (descriptive)
+    - D_2017: 0.0035300959735931974
+    - n_2017: 2697
+    - rank_low: 14
+    - n_placebo: 20
+    - p_low: 0.6666666666666666
+    - placebo_median: -0.00056151641095569
+    - placebo_min: -0.011739857256952863
+    - placebo_max: 0.014863390945192555
+- `2026-10-13T14:32:29Z` **03_analysis** Q5 heavy-dose NDTI
+    - D_2017: 0.0066233193765301195
+    - n_2017: 1269
+    - rank_low: 20
+    - n_placebo: 20
+    - p_low: 0.9523809523809523
+    - placebo_median: -0.003927813180119265
+    - placebo_min: -0.011926338021475396
+    - placebo_max: 0.014589183520498357
+    - verdict: fail
+- `2026-10-13T14:32:56Z` **deviations** DEVIATIONS.md D1 written: s03_analysis.py Q6 void handling (post-freeze bug fix)
+    - sha256: cc18d727b4cb1a6beb72c27c30f44100e3117e69a83b5f3a427dd8aaa5028dbb
+    - s03_sha256: 0c45c15b0d1242d669741c7e4d0056de94780b55da138d71093df0513a2ff6fa
+- `2026-10-13T14:32:56Z` **03_analysis** start
+    - script: revision/fenceline_swir/s03_analysis.py
+    - script_sha256: 0c45c15b0d1242d669741c7e4d0056de94780b55da138d71093df0513a2ff6fa
+    - fs_common_sha256: fbab2a24207efd2a3be1df71e4f497108073a594be401b5135b2db73dee3cd15
+    - python: 3.10.20
+    - argv: []
+- `2026-10-13T14:32:56Z` **03_analysis** freeze verified
+    - changed_scripts_declared_in_deviations: ['revision/fenceline_swir/s03_analysis.py']
+- `2026-10-13T14:32:57Z` **03_analysis** placebo set
+    - P: [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2016, 2018, 2019, 2020, 2021, 2022, 2024, 2025]
+    - excluded_for_data: []
+- `2026-10-13T14:32:57Z` **03_analysis** Q1 NDTI Terra (primary)
+    - D_2017: 0.012566056909966967
+    - n_2017: 2697
+    - rank_low: 20
+    - n_placebo: 20
+    - p_low: 0.9523809523809523
+    - placebo_median: -0.0014368690344407555
+    - placebo_min: -0.010037953981187384
+    - placebo_max: 0.016178089836992086
+    - verdict: fail
+- `2026-10-13T14:32:57Z` **03_analysis** Q2 rain-adjusted
+    - rain_dep_2017_mm: -174.85821533203125
+    - slope: -2.0828031257457375e-06
+    - r: -0.04962943120878434
+    - t: 1.5424112565390726
+    - df: 18
+    - p_one_sided: 0.929814379962148
+    - verdict: fail
+- `2026-10-13T14:32:57Z` **03_analysis** Q3 SWIR2 b07 (bare soil)
+    - D_2017: -0.0001624667249905883
+    - rank_high: 11
+    - n_placebo: 20
+    - p_high: 0.5238095238095238
+    - placebo_median: -0.0005340015902888876
+    - verdict: fail
+- `2026-10-13T14:32:57Z` **03_analysis** Q4 NDVI 500 m (descriptive)
+    - D_2017: 0.0035300959735931974
+    - n_2017: 2697
+    - rank_low: 14
+    - n_placebo: 20
+    - p_low: 0.6666666666666666
+    - placebo_median: -0.00056151641095569
+    - placebo_min: -0.011739857256952863
+    - placebo_max: 0.014863390945192555
+- `2026-10-13T14:32:57Z` **03_analysis** Q5 heavy-dose NDTI
+    - D_2017: 0.0066233193765301195
+    - n_2017: 1269
+    - rank_low: 20
+    - n_placebo: 20
+    - p_low: 0.9523809523809523
+    - placebo_median: -0.003927813180119265
+    - placebo_min: -0.011926338021475396
+    - placebo_max: 0.014589183520498357
+    - verdict: fail
+- `2026-10-13T14:32:57Z` **03_analysis** Q6 Aqua NDTI replicate
+    - verdict: void
+    - reason: Aqua fails the data rule (median valid window composites < 3)
+    - aqua_median_valid_composites: {2003: 2.0, 2004: 2.0, 2005: 2.0, 2006: 2.0, 2007: 2.0, 2008: 2.0, 2009: 2.0, 2010: 2.0, 2011: 2.0, 2012: 2.0, 2013: 2.0, 2014: 2.0, 2015: 2.0, 2016: 2.0, 2017: 2.0, 2018: 1.0, 2019: 2.0, 2020: 1.0, 2021: 2.0, 2022: 1.0, 2023: 1.0, 2024: 1.0, 2025: 2.0}
+    - placebo_years: []
+- `2026-10-13T14:32:57Z` **03_analysis** Q7 per property NDTI
+    - Ol Jogi: D=+0.0116 rank 14/21 n=220
+    - Mpala: D=+0.0243 rank 19/21 n=1083
+    - Loisaba: D=+0.0066 rank 19/21 n=438
+    - Suyian: D=+0.0246 rank 19/21 n=356
+    - Sosian: D=+0.0202 rank 20/21 n=34
+    - Segera: D=-0.0090 rank 9/21 n=441
+    - Ol Malo: D=-0.0328 rank 1/21 n=2
+    - Ngorare: D=-0.0268 rank 2/21 n=123
+- `2026-10-13T14:32:57Z` **03_analysis** Q8 clean placebo years
+    - D_2017: 0.012566056909966967
+    - n_2017: 2697
+    - rank_low: 13
+    - n_placebo: 12
+    - p_low: 1.0
+    - placebo_median: -0.0026527316705594077
+    - placebo_min: -0.010037953981187384
+    - placebo_max: 0.01178949728018455
+    - verdict: fail
+    - placebo_years: [2003, 2004, 2005, 2007, 2010, 2011, 2013, 2018, 2019, 2020, 2024, 2025]
+- `2026-10-13T14:32:57Z` **03_analysis** Q9 post-invasion NDTI (descriptive)
+    - D_2017: 0.007313585173978179
+    - n_2017: 2697
+    - rank_low: 15
+    - n_placebo: 20
+    - p_low: 0.7142857142857143
+    - placebo_median: 0.0017546071571808482
+    - placebo_min: -0.01165894505304603
+    - placebo_max: 0.01873048129402629
+- `2026-10-13T14:32:57Z` **03_analysis** results saved
+    - file: runs/20261014_0101_fenceline_swir/outputs/results.json
+    - sha256: cffb4e9e3e6cff770cee4051f5f83a31cde1d2555189b2695501fe14643ad7ce
+- `2026-10-13T14:32:58Z` **03_analysis** figure
+    - file: runs/20261014_0101_fenceline_swir/outputs/fig_swir_by_year.png
+    - sha256: 0b92efc81d3bab4b2856be40d53d6ab7dedef70e30ccc9b8efd07f3c7cd7bef5
+- `2026-10-13T14:33:49Z` **04_close** previous run re-verified at close
+    - runs/20261013_2150_fenceline/design/design.npz: 189e16b06003fd67537605d630dc655eb62343158f0bdc89b1dbddcd4c7e3aa9
+    - runs/20261013_2150_fenceline/design/design_meta.json: 388207e2b60436b26e6ecb9ba4389f490d263cc7d286e97163783d64abbd777c
+    - runs/20261013_2150_fenceline/inputs/exposure/exposure.csv: 38fed2946cfa05bcfbd55f140db6590f2f7c88bfac6b48c1bf68eb9b551f5733
+    - runs/20261013_2150_fenceline/inputs/exposure/years.csv: 04491632db2fec5dab28cbbf6724407944c2a046220afeb54e19cc2da2d54444
+    - runs/20261013_2150_fenceline/outputs/results.json: ff334c9001c0f29dc6d32d124614e7459352cd4f6796c3be79acfd73ea70a365
+    - runs/20261013_2150_fenceline/FREEZE.json: cf9420af66a3ff4f65dfd9b691d88ee0135f9a4971750682a14897651943c00b
+- `2026-10-13T14:33:49Z` **04_close** Box B data re-hashed at close
+    - data_B: f66f0ef7acd2ed918f4165b1122220f49c5d4f245c3706b869aa6f1aaf9046cc
+- `2026-10-13T14:33:49Z` **04_close** run closed: MANIFEST.sha256 written
+    - manifest_sha256: 90f926c177045b8729c08d6931e5ca67b21baf1d8eb4f56002137d48e5badb37
+    - result_sha256: dda32e67d4e54b16c1ad5c3495e3659f4ad6a6c782a906cf401b2fb53229d8cb
+    - files: 17

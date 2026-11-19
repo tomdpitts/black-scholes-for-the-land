@@ -44,19 +44,20 @@ def ci(v):
     return [float(np.percentile(v, 2.5)), float(np.percentile(v, 97.5))]
 
 
-def sort_test(G, Draw, y, x, a0, ok, yr, rng, extra_mask=None):
-    """Terciles of G; per tercile slope of y on x controlling for a0, bootstrapped over years."""
+def sort_test(G, Draw, y, x, a0, ok, yr, rng, extra_mask=None, ctrl=None):
+    """Terciles of G; per tercile slope of y on x controlling for a0 (and ctrl, if given), bootstrapped over years."""
     q = np.quantile(G[ok], [1 / 3, 2 / 3])
     grp = np.digitize(G, q)
     yl = sorted(set(yr.tolist()))
-    XtX = np.zeros((len(yl), 3, 3, 3)); Xty = np.zeros((len(yl), 3, 3)); n = np.zeros((len(yl), 3))
+    k = 3 if ctrl is None else 4
+    XtX = np.zeros((len(yl), 3, k, k)); Xty = np.zeros((len(yl), 3, k)); n = np.zeros((len(yl), 3))
     dsum = np.zeros(3); dn = np.zeros(3)
     for s in range(len(yr)):
         yi = yl.index(int(yr[s]))
         m = ok[s] if extra_mask is None else ok[s] & extra_mask[s]
         for g in range(3):
             mm = m & (grp[s] == g)
-            X = np.stack([np.ones(mm.sum()), x[s][mm], a0[s][mm]], 1)
+            X = np.stack([np.ones(mm.sum()), x[s][mm], a0[s][mm]] + ([] if ctrl is None else [ctrl[s][mm]]), 1)
             XtX[yi, g] += X.T @ X; Xty[yi, g] += X.T @ y[s][mm]; n[yi, g] += mm.sum()
             dsum[g] += Draw[s][mm].sum(); dn[g] += mm.sum()
 

@@ -7,7 +7,7 @@ greenness, because the response is curved. Vega is d(greenness)/d(spread) at fix
 Attribution mode: given the observed greenness through the season, back out the
 spread of rain that makes the model reproduce it, and compare with the rain that fell.
 
-  python implied.py runs/<pipeline dir>  -> paper/figs/fig0_implied.pdf/.png and numbers
+  python implied.py runs/<pipeline dir>  -> paper/figs/fig0_implied.png and numbers
 """
 import sys
 
@@ -114,7 +114,6 @@ def main():
     ax[3].legend(fontsize=6, frameon=False)
     ax[3].set_title("Implied vs actual rain path", fontsize=7.5, loc="left")
     fig.suptitle(f"The missing input is the rain path within the season, given its total   (Box A, long rains {A['dates'][t0+1][:4]}, box means)", fontsize=8, x=0.01, ha="left")
-    fig.savefig("paper/figs/fig0_implied.pdf", bbox_inches="tight")
     fig.savefig("paper/figs/fig0_implied.png", bbox_inches="tight", dpi=200)
     print("figure written")
 

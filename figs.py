@@ -96,7 +96,7 @@ def main(run, audit):
                    title="Given the rain that fell, how well does each model recover what the land did?",
                    footnote="MODIS NDVI 250 m, Laikipia, Kenya. Every model is fed the rain that actually fell over the following steps; none uses a rain forecast. "
                             "CRPS = mean gap between the model's distribution and the observed greenness anomaly, over identical held-out pixel-dates.")
-    response_chart((12.5, 4.8), 9, "paper/figs/headline_error_vs_horizon.pdf",
+    response_chart((12.5, 4.8), 9, "paper/figs/headline_error_vs_horizon_nofootnote.png",
                    title="Given the rain that fell, how well does each model recover what the land did?")
 
     # ---- Fig 3: calibration (spread-skill + PIT)

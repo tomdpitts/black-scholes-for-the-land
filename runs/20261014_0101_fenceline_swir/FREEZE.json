@@ -1,0 +1,25 @@
+{
+ "frozen_utc": "2026-10-13T14:32:09Z",
+ "git": {
+  "head": "56c7d66d3afd8a671dd1f2e1bc62d12d810a950f",
+  "status_short": "?? explainer/revision_map.html\n?? paper/agriai/\n?? revision/AAAI_STRATEGY.md\n?? revision/fenceline/\n?? revision/fenceline_swir/\n?? wdpa.json"
+ },
+ "sha256": {
+  "runs/20261014_0101_fenceline_swir/PREREG.md": "6b24d3bbc1c1af8beda8b8d10aaa83167c3364cf5b6762a7ea555fecf1cce73d",
+  "runs/20261014_0101_fenceline_swir/inputs/raw/mod09a1_terra.npz": "b4ee93cd5c795f113444413fd0a4b7904e77a325ef255a982551ea1e4fcc3471",
+  "runs/20261014_0101_fenceline_swir/inputs/raw/myd09a1_aqua.npz": "b47e998feaa1b5bb0a19da7b00ea4292287610933c6f01ca4cb7e3822505adc1",
+  "data/B/built.npz": "f66f0ef7acd2ed918f4165b1122220f49c5d4f245c3706b869aa6f1aaf9046cc",
+  "runs/20261013_2150_fenceline/design/design.npz": "189e16b06003fd67537605d630dc655eb62343158f0bdc89b1dbddcd4c7e3aa9",
+  "runs/20261013_2150_fenceline/design/design_meta.json": "388207e2b60436b26e6ecb9ba4389f490d263cc7d286e97163783d64abbd777c",
+  "runs/20261013_2150_fenceline/inputs/exposure/exposure.csv": "38fed2946cfa05bcfbd55f140db6590f2f7c88bfac6b48c1bf68eb9b551f5733",
+  "runs/20261013_2150_fenceline/inputs/exposure/years.csv": "04491632db2fec5dab28cbbf6724407944c2a046220afeb54e19cc2da2d54444",
+  "runs/20261013_2150_fenceline/outputs/results.json": "ff334c9001c0f29dc6d32d124614e7459352cd4f6796c3be79acfd73ea70a365",
+  "runs/20261013_2150_fenceline/FREEZE.json": "cf9420af66a3ff4f65dfd9b691d88ee0135f9a4971750682a14897651943c00b",
+  "revision/fenceline_swir/fs_common.py": "fbab2a24207efd2a3be1df71e4f497108073a594be401b5135b2db73dee3cd15",
+  "revision/fenceline_swir/s00_init.py": "71808d4288a884cfc4e5a9e4eb3378d670b7508e1f75a14ed488e6e4e86e65d6",
+  "revision/fenceline_swir/s01_download.py": "cc8c4d97a7435e6ad2baa552406c219ba0d839204acf99aa1b2a413b4fa462b6",
+  "revision/fenceline_swir/s01b_freeze.py": "f078c7f176e3087d4e5a119b2eda83e48c1b41ef740cd2d2b67d6952f95a3cc8",
+  "revision/fenceline_swir/s02_outcomes.py": "03d04f12c3b4e46d3633449290ac2a0e46b533ea2b69894c6297f32b0ac87e14",
+  "revision/fenceline_swir/s03_analysis.py": "b1fc68c8341712c98f5c451269e3f81b9d91e9d220ac600ffa78ff3862bba427"
+ }
+}
