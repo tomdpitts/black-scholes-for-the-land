@@ -90,7 +90,7 @@ def main():
 
     plt.rcParams.update({"font.size": 8})
     hh = np.arange(H + 1) * 16
-    fig = plt.figure(figsize=(7.0, 3.6))
+    fig = plt.figure(figsize=(7.0, 3.05))
     gs = fig.add_gridspec(1, 2, width_ratios=[5.2, 1.5], wspace=0.04)
     ax = fig.add_subplot(gs[0])
     bx = fig.add_subplot(gs[1], sharey=ax)
@@ -98,28 +98,31 @@ def main():
         for sp in ("top", "right"):
             a.spines[sp].set_visible(False)
     ax.axhline(0, color=LIGHT, lw=0.8)
-    ax.fill_between(hh, lo, hi, color=MID_BLUE, alpha=0.14, lw=0, label="90% range: same weather, ordinary-year residuals")
-    ax.plot(hh, hist, "--", color=GREY, lw=1.4, label="M0 (history alone)")
-    ax.plot(hh, expected, "-", color=MID_BLUE, lw=2, label="expected from the weather that fell")
-    ax.plot(hh, obs, "o-", color=INK, lw=2, ms=4.5, mec="white", mew=0.8, label="observed", zorder=5)
-    ax.set_xlim(-3, 100); ax.set_ylim(-0.2, 0.03); ax.set_xticks(hh)
+    band = ax.fill_between(hh, lo, hi, color=MID_BLUE, alpha=0.14, lw=0)
+    ax.plot(hh, hist, "--", color=GREY, lw=1.4)
+    ax.plot(hh, expected, "-", color=MID_BLUE, lw=2)
+    ax.plot(hh, obs, "o-", color=INK, lw=2, ms=4.5, mec="white", mew=0.8, zorder=5)
+    ax.set_xlim(-3, 100); ax.set_ylim(-0.208, 0.012); ax.set_xticks(hh); ax.set_yticks(np.arange(-0.20, 0.001, 0.05))
     ax.set_xlabel("days from season start"); ax.set_ylabel("NDVI anomaly, box mean (0 = normal)")
     ax.set_title(f"Box A, Mar–May 2022: rain {abs(rain_mm):.0f} mm below normal, evaporative demand {pet_mm:.0f} mm above",
                  fontsize=8.5, loc="left")
     ax.grid(axis="y", color="#ebe5da", lw=0.6); ax.set_axisbelow(True)
     kw = dict(fontsize=7.5, ha="right")
     ax.text(95, hist[-1] + 0.007, f"M0 (history alone) {hist[-1]:+.3f}".replace("-", "−"), color=MUTED, **kw)
-    ax.text(95, expected[-1] + 0.007, f"expected from weather {expected[-1]:+.3f}".replace("-", "−"), color=INK, **kw)
-    ax.text(95, obs[-1] - 0.016, f"observed {obs[-1]:+.3f}".replace("-", "−"), color=INK, fontweight="bold", **kw)
-    ax.legend(loc="lower left", fontsize=6.8, frameon=False, handlelength=1.8)
+    ax.text(95, expected[-1] + 0.028, f"expected from weather {expected[-1]:+.3f}".replace("-", "−"), color=INK, **kw)
+    ax.text(95, obs[-1] - 0.0325, f"observed {obs[-1]:+.3f}".replace("-", "−"), color=INK, fontweight="bold",
+            bbox=dict(fc="white", ec="none", pad=0.8), **kw)
+    # the three lines are labelled directly; the legend carries only the band
+    ax.legend([band], ["90% range: same weather, ordinary-year residuals"], loc="lower left", fontsize=6.8,
+              frameon=False, handlelength=1.8, borderaxespad=0.3)
     top, segs = 0.0, []
-    for v, col, lab in ((start, LIGHT, "baseline,\nnormal weather"), (rain, DARK_BLUE, "rain"),
-                        (demand, BLUE, "evaporative\ndemand"), (resid, ORANGE, "residual –\nnot explained\nby weather")):
+    for v, col, lab in ((start, LIGHT, "baseline, normal\nweather "), (rain, DARK_BLUE, "rain\n"),
+                        (demand, BLUE, "evaporative\ndemand\n"), (resid, ORANGE, "residual –\nnot explained\nby weather\n")):
         segs.append((top, top + v, col, lab))
         top += v
     for t_, b_, col, lab in segs:
         bx.bar(0, b_ - t_, bottom=t_, width=0.55, color=col, edgecolor="white", linewidth=1.2)
-        bx.text(0.36, (t_ + b_) / 2, f"{lab}\n{b_ - t_:+.3f}".replace("-", "−"), va="center", ha="left", fontsize=7,
+        bx.text(0.36, (t_ + b_) / 2, f"{lab}{b_ - t_:+.3f}".replace("-", "−"), va="center", ha="left", fontsize=7,
                 color=INK, linespacing=1.15)
     bx.set_xlim(-0.4, 1.9); bx.set_xticks([]); bx.tick_params(left=False, labelleft=False)
     bx.spines["left"].set_visible(False); bx.spines["bottom"].set_visible(False)

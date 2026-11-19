@@ -13,6 +13,8 @@ Chronos-2 row (zero-shot, given rain and ET0): runs/20261022_1639_suite/tables.m
 runs/20261022_1639_suite/tables.md (same M1 fit); M2-M4 and the ensemble from runs/20261021_0147_m3/RESULT.md;
 Chronos-2 as above (M4 ensemble on its pixels: 0.268 / 0.274). M2 rain removed: runs/20261022_1639_suite/skill_m2nd.json
 (revision/skill_m2nd.py). M1.5: no Box B 2019-25 3-month score.
+RESTREND (combined figure, 3 months only; it gives season-end values): runs/20261022_1639_suite/skill.json and
+tables.md, 0.170 / 0.190.
 Run from the repo root: .venv/bin/python revision/fig_onestep_skill.py [chronos2 | chronos2_3m | combined]
   -> paper/figs/fig_onestep_skill.png, or paper/figs/chronos2/fig_{onestep,3month}_skill_c2.png,
      or (combined: both horizons, one column, the main-text figure) paper/figs/chronos2/fig_skill_c2.png
@@ -94,10 +96,11 @@ def chart(out, rows=ROWS, x0=0, figsize=(6.4, 4.6), fs=8, text=ONE):
 # Main-text version: one column, both horizons. Our ladder (one M4 row, the ensemble), then the outside models.
 # M0 is the zero line; M1.5 has no 3-month Box B score, so it stays in the supplement.
 COMBINED = ["M1, linear rain", "M2, learned", "M2, rain removed", "M3 (inc. topography)", "M4 5-seed ensemble (ours)",
-            "Gradient-boosted trees", "Chronos-2 (inc. rain & evap.)"]
+            "Gradient-boosted trees", "Chronos-2 (inc. rain & evap.)", "RESTREND"]
 SHORT = {"M1, linear rain": "M1 (linear rain)", "M2, learned": "M2 (neural net)", "M2, rain removed": "M2 (rain removed)",
          "M3 (inc. topography)": "M3 (topography)", "M4 5-seed ensemble (ours)": "M4 (evap. demand)",
-         "Gradient-boosted trees": "Gradient-boosted\ntrees", "Chronos-2 (inc. rain & evap.)": "Chronos-2"}
+         "Gradient-boosted trees": "Gradient-boosted\ntrees", "Chronos-2 (inc. rain & evap.)": "Chronos-2",
+         "RESTREND": "RESTREND"}
 
 
 # M2 and M3 as 5-fit ensembles, like M4 (runs/20261021_0147_m3/gpu/metrics_ens_{base,topo}.json): (A, B) at 16 days, 3 months
@@ -108,10 +111,11 @@ def combined(out, fs=7):
     one, three = dict((r[0], r[1:]) for r in ROWS_C2), dict((r[0], r[1:]) for r in ROWS_3M)
     for k, (o, t) in ENS.items():
         one[k], three[k] = o, t
-    fig, axes = plt.subplots(1, 2, figsize=(3.3, 2.45), sharey=True, layout="constrained")
+    one["RESTREND"], three["RESTREND"] = (np.nan, np.nan), (0.170, 0.190)  # season-end only: no 16-day value
+    fig, axes = plt.subplots(1, 2, figsize=(3.3, 2.65), sharey=True, layout="constrained")
     fig.patch.set_facecolor(SURF)
     y = np.arange(len(COMBINED))[::-1].astype(float)
-    y[-2:] -= 0.5  # air between our models and the outside ones
+    y[-3:] -= 0.5  # air between our models and the outside ones
     h = 0.36
     for ax, data, title, x0, x1, dx, t0 in ((axes[0], one, "16 days", 0, 16, 5, 0), (axes[1], three, "3 months", -5, 30, 10, 0)):
         ax.set_facecolor(SURF)
@@ -120,6 +124,8 @@ def combined(out, fs=7):
             yy = y + (h / 2 + 0.02) * (1 if j == 0 else -1)
             ax.barh(yy, vals, height=h, color=col, label=name, zorder=2)
             for v, yi in zip(vals, yy):
+                if np.isnan(v):
+                    continue
                 ax.text(v + (0.012 if v >= 0 else -0.012) * (x1 - x0), yi, f"{v:.1f}", va="center",
                         ha="left" if v >= 0 else "right", fontsize=fs - 1.5, color=INK2)
         ax.axvline(0, color=INK2, lw=0.8, zorder=3)
