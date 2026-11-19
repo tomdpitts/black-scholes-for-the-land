@@ -47,9 +47,9 @@ Vegetation growth in rangeland is fundamental to the issuance of soil carbon cre
 \end{abstract}
 
 \begin{figure*}[t]
-\centering\includegraphics[width=\textwidth]{chronos2/fig_maps_split_2022_m4e.png}
-\caption{Box A, March--May 2022, a held-out year. Season-end NDVI anomaly per 2.2\,km block from M4. Every run starts from the late-February state with residual zero. The baseline is the run under normal weather. Rain and evaporative demand split the run under the weather that fell minus the baseline by Shapley value. The residual is observed minus that run. Elevation, left, is an input and not a share.}
-\label{fig:split}
+\centering\includegraphics[width=\textwidth]{schematic/fig_rollout.pdf}
+\caption{M4 as a Markovian world model: each 16-day step reads the current dynamic state (greenness with its $5\times5$ neighbourhood, and a water memory that summarises past water balance), the static traits and the real or simulated rain and ED, and returns the mean $\mu$ and spread $\sigma$ of the next greenness. Each step is an invertible conditional affine flow, giving the implied residual $\hat\varepsilon$ over an arbitrary number of steps. Maps: Box A, March--May 2022, 2.2\,km blocks.}
+\label{fig:schematic}
 \end{figure*}
 
 \section{Introduction}
@@ -57,13 +57,13 @@ To monitor and validate efficacy of sustainable grassland management practices s
 
 % Elsewhere, livestock index insurance in the same counties pays on seasonal NDVI against the insured area's own history \citep{deoto2019}. For maximum efficiency, the insurer ideally would want to quantify forage loss attributed only to factors specifically included in the policy, such as drought, rather than management decisions such as overgrazing. Both categories of payment would benefit from a clean split of the land's response between the climatic conditions and other remaining factors. To the best of our knowledge, no current operational baseline makes that split cleanly. 
 
-In this work we propose a model that makes that split with climate factors as its conditioning input, specifically, CHIRPS rain and ERA5 evaporative demand (ED) \citep{hersbach2020}, two key drivers of the climatic water balance \citep{spei} in these rangelands. We also show that adding static attributes \citep{kratzert2019} materially improves the model's skill in forecasts over single-step (16 days) and 3-month timeframes, by adding in topography in the form of Copernicus DEM GLO-30 elevation, slope, and topographic position \citep{copdem}. The residual this leaves, the land's response net of the weather, is a cleaner signal of management than greenness alone.
+In this work we propose a model that makes that split with climate factors as its conditioning input, specifically, CHIRPS rain and ERA5 evaporative demand (ED) \citep{hersbach2020}, two key drivers of the climatic water balance \citep{spei} in these rangelands. We also show that adding static traits \citep{kratzert2019} materially improves the model's skill in forecasts over single-step (16 days) and 3-month timeframes, by adding in topography in the form of Copernicus DEM GLO-30 elevation, slope, and topographic position \citep{copdem}. The residual this leaves, the land's response net of the weather, is a cleaner signal of management than greenness alone.
 
 Our approach is borrowed from the Black--Scholes formula (BSF) \citep{bs}, which is used to price an option from observables (the stock price, strike, time to expiry and interest rate) and one unobservable parameter, the volatility. By instead inverting on the actual market price, the BSF produces ``implied'' volatility. In our model, the observables are the land's current state and the rain and ED that fell. Inverted on the observed greenness, the model produces the part of the land's response the weather does not explain. We term this weather-adjusted response the \textbf{implied residual}. By feeding in other weather, \textbf{counterfactual scenarios} can be modelled, and per-pixel patch \textbf{sensitivities} can be derived by automatic differentiation through the model rollout.
 
 Our contributions are as follows:
 \begin{itemize}
-    \item An invertible transition-density world model of greenness, with the weather as the action, whose inversion gives the implied residual.
+    \item An invertible transition-density world model of greenness, with the weather as the action, whose inversion and counterfactual re-runs together give a full attribution of each season: the implied residual, and the weather's share by driver
     \item Greek-like sensitivities derived by differentiating through the model rollout, which can stand in for the full model: a $\Delta$-weighted sum of observed weather anomalies recovers the weather term to first order in droughts, and to second order with $\Gamma$ in wet seasons, where greenness saturates.
     \item A finding that good forecasting does not imply an accurate world model of the land, shown with the Chronos-2 time-series foundation model.
 \end{itemize}
@@ -79,48 +79,48 @@ The third group comprises time-series foundation models, large networks pretrain
 
 \begin{figure*}[t]
 \centering\includegraphics[width=\textwidth]{candidates/fig_2022_attribution_m4.png}
-\caption{The 2022 drought, Box A, a held-out year: box means from M4, with the expected path run at zero residual. Shading as in the Appendix. Right: the season-end split by \eqref{eq:split}.}
+\caption{The 2022 drought, Box A, a held-out year: box means from M4, with the expected path run at zero residual. Shading as in the Appendix. Right: the season-end attribution split by \eqref{eq:split}.}
 \label{fig:attribution}
 \end{figure*}
 
 \section{Methodology}
 
-\paragraph{Model} Our model is a world model in the sense of the memory model M of \citet{ha2018}: a predictive model of the future that outputs a probability density function. Our model estimates the specific terrain response from data as a transition density for the greenness anomaly $a$ in place of their learned latent state $z$, given a water-balance memory $w$ of past climatic water balance rather than a recurrent memory $h$, and its current weather value $u$ in place of the agent's action $\mathrm{act}_t$.
+\paragraph{Model} Our model is a world model in the sense of the memory model M of \citet{ha2018}: a predictive model of the future that outputs a probability density function (Figure~\ref{fig:schematic}). Our model estimates the specific terrain response from data as a transition density for the greenness anomaly $a$ in place of their learned latent state $z$, given a water memory $w$ of past climatic water balance rather than a recurrent memory $h$, and its current weather value $u$ in place of the agent's action $\mathrm{act}_t$.
 \begin{alignat*}{4}
 \text{\citet{ha2018}, M:}\quad & p_\theta(z_{t+1} &&{}\mid z_t,\; && h_t,\; && \mathrm{act}_t)\\
 \text{Ours:}\quad & p_\theta(a_{t+1} &&{}\mid a_t,\; && w_t,\; && u_{t+1})
 \end{alignat*}
 
 
-Each step sees only the current state, not the series i.e. Markovian. The state is the anomaly $a_t$ and an antecedent index $w_t$ of the climatic water balance, a one-parameter bucket whose memory $\lambda(x)$ depends on the pixel's traits:
+Each step sees only the current state, not the series i.e. Markovian. The dynamic state is the anomaly $a_t$, its $5\times5$ neighbourhood mean $\bar a_t$, and the water memory $w_t$, a one-parameter bucket of the climatic water balance whose decay $\lambda(x)$ depends on the pixel's static traits:
 \begin{align}
 w_{t+1} &= \lambda(x)\,w_t + u_{t+1}, \nonumber\\
 a_{t+1} &= a_t + \mu_\theta(a_t, \bar a_t, w_t, u_{t+1}, \phi_{t+1}, x) \nonumber\\
 &\quad + \sigma_\theta(\cdot)\,\varepsilon_t,\qquad \varepsilon_t\sim\mathcal N(0,1),
 \label{eq:model}
 \end{align}
-where $t$ indexes 16-day steps, $\bar a_t$ is the $5\times5$ neighbourhood mean of $a_t$, $\phi_{t+1}$ is the seasonal phase (sine and cosine of day of year), $x$ is six static traits of the pixel: mean NDVI, seasonal amplitude, climatological annual rain, and elevation, slope and topographic position from the Copernicus GLO-30 DEM \citep{copdem}, and $u_t=r_t-k(x)\,e_t$ is rain net of ED, the climatic water balance \citep{spei}, with $k$ linear in the traits. $w_t$ is a decaying sum of past $u_t$ that keeps a fraction $\lambda(x)=\mathrm{sigmoid}(c_0+c^\top x)$ each step. $\mu_\theta$ is the expected change in the anomaly and $\sigma_\theta$ its spread, both functions of the same six inputs, so $p_\theta(a_{t+1}\mid\cdot)=\mathcal N(a_t+\mu_\theta,\sigma_\theta^2)$; $\theta$ is one set of weights shared by every pixel. \textbf{M0} uses history alone. \textbf{M1} has $\mu$ and $\log\sigma$ linear in the features. \textbf{M2} adds a 64-unit one-hidden-layer network to $\mu$ and $\log\sigma$. \textbf{M3} adds the topographic traits to M2. \textbf{M4} adds ED ($k=0$ below M4) to M3 and is an equal-weight mixture of five fits. All are fitted by full-batch Adam on the one-step Gaussian log-likelihood of observed transitions.
+where $t$ indexes 16-day steps, $\bar a_t$ is the $5\times5$ neighbourhood mean of $a_t$, $\phi_{t+1}$ is the seasonal phase (sine and cosine of day of year), $x$ is six static traits of the pixel: mean NDVI, seasonal amplitude, climatological annual rain, and elevation, slope and topographic position from the Copernicus GLO-30 DEM \citep{copdem}, and $u_t=r_t-k(x)\,e_t$ is rain net of ED, the climatic water balance \citep{spei}, with $k$ linear in the traits. The water memory $w_t$ is a decaying sum of past $u_t$ that keeps a fraction $\lambda(x)=\mathrm{sigmoid}(c_0+c^\top x)$ each step. $\mu_\theta$ is the expected change in the anomaly, added to the current anomaly, and $\sigma_\theta$ its spread, both functions of the same six inputs, so $p_\theta(a_{t+1}\mid\cdot)=\mathcal N(a_t+\mu_\theta,\sigma_\theta^2)$; $\theta$ is one set of weights shared by every pixel. \textbf{M0} uses history alone. \textbf{M1} has $\mu$ and $\log\sigma$ linear in the features. \textbf{M2} adds a 64-unit one-hidden-layer MLP to M1's linear $\mu$ and $\log\sigma$. \textbf{M3} adds the topographic traits to M2. \textbf{M4} adds ED ($k=0$ below M4) to M3 and is an equal-weight mixture of five fits. All are fitted by full-batch Adam on the one-step Gaussian log-likelihood of observed transitions.
 
-\paragraph{Residual} Inverting \eqref{eq:model} on an observed transition gives the implied (standardised) residual,
+\paragraph{Residual} Inverting \eqref{eq:model} on an observed transition, conditioned on the observed state, gives the implied (standardised) residual (Figure~\ref{fig:schematic}, orange gap),
 \begin{equation}
 \hat\varepsilon_t = \frac{a_{t+1} - a_t - \mu_\theta(a_t,\bar a_t,w_t,u_{t+1},\phi_{t+1},x)}{\sigma_\theta(\cdot)},
 \label{eq:implied}
 \end{equation}
-which in practical terms is simply one number per pixel per 16 days, in units of the model's predicted standard deviation, $\sigma_\theta$. Each step is a one-layer conditional affine flow \citep{papamakarios2021}, so the model is invertible: each observed transition has a unique residual. Here $F_h$ is \eqref{eq:model} rolled forward from the season's starting state with zero residual along the observed rain and ED. Carried autoregressively through the rollout, the implied residuals reproduce the observed path exactly, so their combined effect is the residual term for the season, $a_{t+h}-F_h$, in NDVI rather than units of $\sigma_\theta$. We produce an interval for $F_h$ by re-running the season with residuals resampled from the training seasons (Figure~\ref{fig:attribution}). 
+which in practical terms is simply one number per pixel per 16 days, in units of the model's predicted standard deviation, $\sigma_\theta$. Each step is a one-layer conditional affine flow \citep{papamakarios2021}, so the model is invertible: each observed transition has a unique residual. Here $F_h$ is \eqref{eq:model} rolled forward from the season's starting state with zero residual along the observed rain and ED. Carried autoregressively through the rollout, the implied residuals reproduce the observed path exactly, so their combined effect is the season residual, $a_{t+h}-F_h$, in NDVI rather than units of $\sigma_\theta$; the implied residual surface (Figure~\ref{fig:surface}) is built from it, by analogy with implied volatility. We produce an interval for $F_h$ by re-running the season with residuals resampled from the training seasons (Figure~\ref{fig:attribution}). 
 
 
 \paragraph{Counterfactual} 
 
-Rolled along any other weather path $(r',e')$, $u'=r'-k(x)\,e'$, the same rollout gives $F_h(r',e')$, so $F_h=F_h(r,e)$. With $(\bar r,0)$, $\bar r$ being the climatological rain, each pixel's 2003--2018 mean for that 16-day step of the year, and $0$ a zero ED anomaly, the season-end anomaly splits exactly into baseline, weather and residual,
+Rolled along any other weather path $(r',e')$, $u'=r'-k(x)\,e'$, the same rollout gives $F_h(r',e')$, so $F_h=F_h(r,e)$. With $(\bar r,0)$, $\bar r$ being the normal rain, each pixel's 2003--2018 mean for that 16-day step of the year, and $0$ a zero ED anomaly, the season-end anomaly splits attribution exactly into baseline, weather, and residual,
 \begin{equation}
 \medmuskip=1.5mu\thickmuskip=2.5mu
-a_{t+h}=\underbrace{F_h(\bar r,0)}_{\text{baseline}}+\underbrace{[F_h(r,e)-F_h(\bar r,0)]}_{\text{weather term}}+\underbrace{[a_{t+h}-F_h(r,e)]}_{\text{residual}}.
+a_{t+h}=\overbrace{\underbrace{F_h(\bar r,0)}_{\text{baseline}}+\underbrace{[F_h(r,e)-F_h(\bar r,0)]}_{\text{weather term}}+\underbrace{[a_{t+h}-F_h(r,e)]}_{\text{residual}}}^{\text{attribution}}.
 \label{eq:split}
 \end{equation}
-The weather term is divided between rain and ED by Shapley value over the four combinations of observed and normal rain and ED \citep{shapley1953} (Figure~\ref{fig:split}). 
+The weather term is divided between rain and ED by Shapley value over the four combinations of observed and normal rain and ED \citep{shapley1953} (Figures~\ref{fig:schematic} and~\ref{fig:split}). 
 
 \paragraph{Sensitivities}
-Following the BSF Greeks, we take Jacobian-vector products through the rollout at normal weather: $\Delta_h=\partial F_h(\bar r,0)/\partial r_{t+1}$, greenness $h$ steps ahead per $100$\,mm of rain now. $\Gamma_h=\partial^2F_h(\bar r,0)/\partial r_{t+1}^2$ is a measure of the saturation effect, or rather, how the sensitivity of $\Delta$ itself changes with rain. $\Theta_h=\partial F_h(\bar r,0)/\partial a_t$ is a measure of how long it takes for anomalies or shocks to subside.
+Following the BSF Greeks, we take Jacobian-vector products through the rollout at normal weather (Figure~\ref{fig:schematic}, right): $\Delta_h=\partial F_h(\bar r,0)/\partial r_{t+1}$, greenness $h$ steps ahead per $100$\,mm of rain now. $\Gamma_h=\partial^2F_h(\bar r,0)/\partial r_{t+1}^2$ is a measure of the saturation effect, or rather, how the sensitivity of $\Delta$ itself changes with rain. $\Theta_h=\partial F_h(\bar r,0)/\partial a_t$ is a measure of how long it takes for anomalies or shocks to subside.
 
 \section{Experiments \& Results}
 
@@ -151,7 +151,7 @@ Time & 0.1\,ms & $<$0.1\,ms & 11\,min & 71\,ms\\\bottomrule
 
 \begin{figure*}[t]
 \centering\includegraphics[width=\textwidth]{implied_surface/plotly_faceted_row.png}
-\caption{Implied residual surface, Box A, held-out years 2019--25 (141 start dates). Each cell is the mean residual over 2.2\,km blocks, by horizon and by the water-balance departure since the start (rain minus ED, in standard deviations). In unseen years, the z-score tilts with the weather while RESTREND bends, primarily in the wet tail. M4 remains broadly flat. Spread is the standard deviation of the cell means; cells with fewer than three years are omitted.}
+\caption{Implied residual surface, Box A, held-out years 2019--25 (141 start dates). Each cell is the mean season residual over 2.2\,km blocks, by horizon and by the water-balance departure since the start (rain minus ED, in standard deviations). In unseen years, the z-score tilts with the weather while RESTREND bends, primarily in the wet tail. M4 remains broadly flat. Spread is the standard deviation of the cell means; cells with fewer than three years are omitted.}
 \label{fig:surface}
 \end{figure*}
 
@@ -195,7 +195,7 @@ where $\delta r_s,\delta e_s$ are the departures of rain and ED from normal in w
 We cannot inspect Chronos-2's internals, but we posit one possibility based on the data. Across seasons, rain and ED move almost in lockstep (correlation $-0.98$), so a forecaster can lean on either driver, and Chronos-2 does indeed lean on ED, splitting the 2022 drought mostly to ED (Table~\ref{tab:drought}). At a 16-day step however, the correlation is only $-0.5$, and in a typical fortnight rain differs by about $60$\,mm across the box, while ED varies only by about $3$\,mm. In other words, within a given fortnight, ED acts like a constant while rain varies across pixels. M4 on the other hand is forced to learn a single transition for all $25\,600$ pixels, conditioned on each pixel's terrain and state, so must be able to explain why pixels a few km apart have different outcomes in the same timeframe. A forecaster reading one pixel's series at a time, even its entire recorded history, never sees those differences.
 
 \section{Conclusion}
-Inverting our learned transition-density world model on observed satellite data produces the implied residual, the land's weather-adjusted response, and with it the weather's impact, the two sides that carbon credit issuance needs. Its counterfactuals separate that share from the land's starting state and break it down by driver, demonstrated here with rain and ED. By differentiation, the model derives each pixel's sensitivity to rain, which ranks response on unseen years. While run only as a proof of concept on limited data, we believe invertible transition-density world models have potential for complex real-world temporal systems and welcome further exploration in this space.
+Inverting our learned transition-density world model on observed satellite data produces the implied residual, the land's weather-adjusted response, and with it the weather's impact, the two sides that carbon credit issuance needs. Its counterfactuals complete the attribution, separating that share from the land's starting state and breaking it down by driver, demonstrated here with rain and ED. By differentiation, the model derives each pixel's sensitivity to rain, which ranks response on unseen years. While run only as a proof of concept on limited data, we believe invertible transition-density world models have potential for complex real-world temporal systems and welcome further exploration in this space.
 
 \bibliography{references}
 \end{document}
