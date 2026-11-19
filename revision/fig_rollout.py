@@ -164,7 +164,7 @@ def main():
     arrow(dr, sy, xs[0] - bw / 2, sy)
     for k in range(2):
         l, r_ = xs[k] + bw / 2, xs[k + 1] - bw / 2
-        x0 = (l + r_) / 2 - sw_state / 2
+        x0 = (l + r_ - 0.12) / 2 - sw_state / 2  # centred in the gap before the skip branch
         ax.plot([l, x0 - 0.05], [sy, sy], color=INK, lw=0.9, zorder=3)
         state(x0, *states[k + 1])
         arrow(x0 + sw_state + 0.05, sy, r_, sy)
@@ -243,7 +243,7 @@ def main():
         t(cx - 0.055, yb + 0.06, r"$\hat\varepsilon$", fontsize=7.5, color=ORANGE, zorder=6)  # inside the bell, over its gap, near the mean where the bell is tall
         # inverting: the observed greenness, not the model's own mean, is carried into the next step's state
         if k < 2:
-            gxs = (xs[k] + bw / 2 + xs[k + 1] - bw / 2) / 2 - sw_state / 2 + 2.5 * c  # next 5x5 icon, centre
+            gxs = (xs[k] + bw / 2 + xs[k + 1] - bw / 2 - 0.12) / 2 - sw_state / 2 + 2.5 * c  # next 5x5 icon, centre
             yl = yb - 0.08
             ax.plot([cx + ob, cx + ob, gxs, gxs], [yb - 0.03, yl, yl, sy - 2.5 * c - 0.06], color=DARK_SAGE,
                     lw=0.8, ls=(0, (2.5, 1.8)), zorder=3, solid_joinstyle="miter")
